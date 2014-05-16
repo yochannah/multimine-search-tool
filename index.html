@@ -1,26 +1,27 @@
 <!doctype html>
 
-<html lang="en" data-framework="angularjs" ng-app="multimine-search-tool">
+<html lang="en">
 
 	<head>
 		<meta charset="utf-8">
 		<title>Multimine Search Version</title>
 		<link rel="stylesheet" href="css/bootstrap.min.css">
 		<link rel="stylesheet" href="css/main.css">
+		
+		
+		<script charset="UTF-8"
+		            data-main="main"
+		            type="text/javascript"
+		            src="bower_components/requirejs/require.js">
+		</script>
+		
+		
 		<style>[ng-cloak] { display: none; }</style>
 	</head>
 
 	<body ng-controller="MainCtrl">
 
-		<script src="bower_components/imjs/js/im.js"></script>
-		<script src="bower_components/underscore/underscore-min.js"></script>
-		<script src="bower_components/angular/angular.js"></script>
-		<script src="bower_components/angular-route/angular-route.js"></script>
-		<script src="js/app.js"></script>
-		<script src="js/controllers/mainctrl.js"></script>
-
-
-<!-- 		<div class="row">
+ 		<div class="row">
 
 			<div class="hcenteredbox">
 
@@ -30,7 +31,7 @@
 
 					<form class="navbar-form halfwidth" role="search" ng-submit="getCommonItems(searchterm)">
 				        <div class="input-group input-group-lg">
-				            <input type="text" ng-model="search" class="form-control" placeholder="long tail, lola*, Parkinson, MGI:96677" name="searchterm" id="searchterm" ng-model="searchterm">
+				            <input type="text"class="form-control" placeholder="long tail, lola*, Parkinson, MGI:96677" name="searchterm" id="searchterm" ng-model="search">
 				            <div class="input-group-btn">
 				                <button snap-toggle ng-click="callme(search)" class="btn btn-default" type="submit">Search </button>
 				            </div>
@@ -43,7 +44,7 @@
 			</div>
 
 
-		</div> -->
+		</div>
 
 		<div class="row">
 
@@ -74,17 +75,10 @@
 
     				<div class="panel-heading well-sm">Results</div>
 
-		    		<table>
-						<tr ng-repeat="result in results | selectedTags:categoryFilter | selectedGenus:genusFilter">
-							<td>{{result.type}}</td>
-							<td>{{result.mine.name}}</td>
-							<td>
-								<ul>
-									<li ng-repeat="(field, value) in result.fields">{{field}}: {{value}}</li>
-								</ul>
-							</td>
-						</tr>
-					</table>
+
+
+
+		    		<ng-include src="'template.html'"></ng-include>
 				</div>
     		</div>
 		</div>

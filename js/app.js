@@ -1,6 +1,10 @@
-angular.module('multimine-search-tool', ['ngRoute'])
+define(['angular', './controllers', './filters'], function (angular) {
+	'use strict';
+	
+	angular.module('multimine-search-tool', [
+		'ngRoute', 'multimine-search-tool.controllers', 'multimine-search-tool.filters'])
 	.config(function ($routeProvider) {
-		'use strict';
+
 
 		$routeProvider.when('/', {
 			controller: 'MainCtrl',
@@ -12,3 +16,4 @@ angular.module('multimine-search-tool', ['ngRoute'])
 			redirectTo: '/'
 		});
 	});
+});

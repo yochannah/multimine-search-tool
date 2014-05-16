@@ -1,0 +1,12 @@
+
+	<table>
+		<tr ng-repeat="result in results | selectedTags:categoryFilter | selectedGenus:genusFilter">
+			<td>{{result.type}}</td>
+			<td>{{result.mine.name}}</td>
+			<td>
+				<ul>
+					<li ng-repeat="(field, value) in result.fields">{{field}}: {{value}}</li>
+				</ul>
+			</td>
+		</tr>
+	</table>
