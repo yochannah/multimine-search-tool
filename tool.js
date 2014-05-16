@@ -1,8 +1,8 @@
 define([
 	'app',
 	'./js/controllers/search-results',
-	'./filters/selected-genus',
-	'./filters/selected-tags'], function (staircase, SearchResultsCtrl, selectedGenusFac, selectedTagsFac) {
+	'./js/filters/selected-genus',
+	'./js/filters/selected-tags'], function (staircase, SearchResultsCtrl, selectedGenusFac, selectedTagsFac) {
 	
 	'use strict';
 	
