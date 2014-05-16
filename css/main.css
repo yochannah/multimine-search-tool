@@ -1,0 +1,197 @@
+@import url(http://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,100italic,100);
+
+body {
+    background: #333;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../images/honey_im_subtle.png');
+    background-repeat: repeat;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300;
+}
+
+
+
+
+.centeredbox {
+
+	width: 800px;
+	height: 200px;
+
+	position: absolute;
+	top:0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	padding: 30px;
+	
+	margin: auto;
+	text-align: center;
+
+}
+
+.hcenteredbox {
+	width: 100%;
+	text-align: center;
+	padding-top: 30px;
+}
+
+.searchbox {
+	width: 700px;
+	margin: 0 auto;
+}
+
+donut-chart{
+
+
+      float: left;
+      z-index: 99999;
+      /*border: 1px solid white;*/
+}
+
+tree-chart{
+
+      display: block;
+      float: left;
+      /*border: 1px solid white;*/
+}
+
+
+.resultitem {
+	width: 100px;
+	height: 100px;
+	background: white;
+	float: left;
+	margin: 5px;
+	border-radius: 5px;
+	border: 1px solid #aaaaaa;
+	font-size: 0.8em;
+}
+
+.resultitembanner {
+	-webkit-border-top-left-radius: 5px;
+	-webkit-border-top-right-radius: 5px;
+	-moz-border-radius-topleft: 5px;
+	-moz-border-radius-topright: 5px;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	height: 30px;
+	background: #ffc785;
+	text-align: center;
+}
+
+
+
+.animate-enter, 
+.animate-leave
+{ 
+	-webkit-transition: 400ms cubic-bezier(0.250, 0.250, 0.750, 0.750) all;
+	-moz-transition: 400ms cubic-bezier(0.250, 0.250, 0.750, 0.750) all;
+	-ms-transition: 400ms cubic-bezier(0.250, 0.250, 0.750, 0.750) all;
+	-o-transition: 400ms cubic-bezier(0.250, 0.250, 0.750, 0.750) all;
+	transition: 400ms cubic-bezier(0.250, 0.250, 0.750, 0.750) all;
+	position: relative;
+	display: block;
+	overflow: hidden;
+	text-overflow: clip;
+	white-space:nowrap;
+} 
+
+.animate-leave.animate-leave-active,
+.animate-enter {
+	opacity: 0;
+	width: 0px;
+	height: 0px;
+}
+
+.animate-enter.animate-enter-active, 
+.animate-leave {
+	opacity: 1;
+	width: 150px;
+	height: 30px;
+}
+	
+
+
+
+
+	.node {
+  cursor: pointer;
+}
+
+.node circle {
+  fill: #fff;
+  stroke: black;
+  stroke-width: 1.5px;
+}
+
+.node text {
+  font: 12px sans-serif;
+}
+
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 1.5px;
+}
+
+.category {
+	width: 150px;
+	background: #ffffff;
+	float: left;
+	margin: 3px;
+	padding: 2px;
+	font-size: 0.85em;
+	text-align: center;
+}
+
+.selected {
+	background: #60a917;
+	color: white;
+	font-weight: bold;
+
+}
+
+table {
+	width: 100%;
+	background: white;
+}
+
+table tr td {
+
+	border: 1px solid black;
+}
+
+.resultPanel {
+	float: left;
+	margin: 4px;
+	border: 1px solid grey;
+	background: white;
+		-webkit-border-top-left-radius: 5px;
+	-webkit-border-top-right-radius: 5px;
+	-moz-border-radius-topleft: 5px;
+	-moz-border-radius-topright: 5px;
+
+}
+
+.resultscontainer {
+	display: block;
+}
+
+
+snap-drawer {
+	background-image: url('../images/honey_im_subtle_dark.png');
+    background-repeat: repeat;
+    color: white;
+}
+
+snap-content {
+	background-image: url('../images/honey_im_subtle.png');
+    background-repeat: repeat;
+}
+
+
+
+
+
