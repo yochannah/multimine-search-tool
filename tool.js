@@ -12,6 +12,6 @@ define([
 	/**
 	* scope.step.data = {searchTerm: string}
 	*/
-	return SearchResultsController;
+	return SearchResultsCtrl;
 	
 });

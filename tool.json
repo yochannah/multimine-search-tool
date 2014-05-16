@@ -2,5 +2,5 @@
 	"capabilities": ["now"],
 	"type": "native",
 	"templateURI": "./template.html",
-	"controllerURI": "./tool.js"
+	"controllerURI": "./tool"
 }
