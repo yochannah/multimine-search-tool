@@ -19,9 +19,9 @@
 		<style>[ng-cloak] { display: none; }</style>
 	</head>
 
-	<body ng-controller="MainCtrl">
+	<body ng-controller="DemoCtrl">
 
- 		<div class="row">
+ 		<div class="row" ng-controller="SearchInputCtrl">
 
 			<div class="hcenteredbox">
 
@@ -29,16 +29,14 @@
 
 					<img src="images/logo.png">
 
-					<form class="navbar-form halfwidth" role="search" ng-submit="getCommonItems(searchterm)">
+                    <form class="navbar-form halfwidth" role="search" ng-submit="step.data.searchTerm = searchterm">
 				        <div class="input-group input-group-lg">
-				            <input type="text"class="form-control" placeholder="long tail, lola*, Parkinson, MGI:96677" name="searchterm" id="searchterm" ng-model="searchTerm">
+				            <input type="text"class="form-control" placeholder="long tail, lola*, Parkinson, MGI:96677" name="searchterm" id="searchterm" ng-model="searchterm">
 				            <div class="input-group-btn">
 				                <button snap-toggle ng-click="search(searchTerm)" class="btn btn-default" type="submit">Search </button>
 				            </div>
 				        </div>
 				    </form>
-
-			    	<h1 ng-show="results.length > 0">{{results.length}} results in {{categories.length}} categories.</h1>
 
 		    	</div>
 			</div>
@@ -46,7 +44,11 @@
 
 		</div>
 
-		<div class="row">
+		<div class="row" ng-controller="SearchResultsCtrl" ng-show="step.data.searchTerm">
+
+            <div class="searchbox">
+                <h1 ng-show="results.length > 0">{{results.length}} results in {{categories.length}} categories.</h1>
+            </div>
 
 <!-- 
     		<div class="col-xs-2">

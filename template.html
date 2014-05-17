@@ -1,5 +1,5 @@
-<table>
-    <div class="alert alert-info" ng-hide="filteredResults.length">
+<table class="table">
+    <div class="alert alert-info" ng-hide="filteredResults.length || (!searchTerm && !step.data.searchTerm)">
         <strong>Sorry</strong> no results matched your search terms.
     </div>
     <tr ng-repeat="result in filteredResults">
