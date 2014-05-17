@@ -10,11 +10,7 @@ define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
 	function SearchResultsCtrl ($scope, $q, $timeout, $filter, Mines) {
 
     // Define initial state.
-		$scope.stats = {categories: {}}; // Holds our statistics
-		$scope.results = []; // Holds our final results
-    $scope.filterResults = [];
-		$scope.selectedGenera = [];
-		$scope.selectedOrganisms = [];
+    init();
 
 		$scope.toggleFilter = function(arrName, value) {
 
@@ -27,28 +23,22 @@ define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
 
 		};
 
-		$scope.search = function (searchterm) {
-			if (!searchterm) return;
-
-			// Manage our returned data:
-      var searchingAll = Mines.all().then(searchAllFor(searchterm, 200));
-          
-      searchingAll.then($q.all).then(inTimeout(function(mineResultSets) {
-        buildStats($scope, mineResultSets);
-        nestOrganisms($scope, mineResultSets);
-
-        // Convert the categories objects into an array of objects (for filtering)
-        buildCategories($scope);
-        filterResults();
-      }));
-					
-		};
-		
     // Make sure that the search reflects the search term, and that the filtered results
     // reflect the facets.
-		$scope.$watch('step.data.searchTerm', $scope.search);
+		$scope.$watch('step.data.searchTerm', search);
+    $scope.$watch('results', filterResults);
     $scope.$watch('selectedGenera', filterResults);
     $scope.$watch('selectedOrganisms', filterResults);
+
+    function init () {
+      $scope.complete = false;
+      $scope.percentDone = 0;
+      $scope.stats = {categories: {}}; // Holds our statistics
+      $scope.results = []; // Holds our final results
+      $scope.filterResults = [];
+      $scope.selectedGenera = [];
+      $scope.selectedOrganisms = [];
+    }
 
     // Apply the filters (initially empty) to build the initial state. Needs $scope
     function filterResults () {
@@ -59,6 +49,39 @@ define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
     function inTimeout (f) {
       return function (x) { $timeout(function () { f(x); }); };
     }
+
+		function search (searchterm) {
+			if (!searchterm) return;
+
+      // Start the search.
+      var searchingAll = Mines.all().then(searchAllFor(searchterm, 200));
+      var done = 0;
+      init(); // Reinitialise.
+
+      // Supply progress notifications.
+      searchingAll.then(function (promises) {
+        var n = promises.length;
+        promises.forEach(function (promise) {
+          promise.then(inTimeout(function () {
+            done++;
+            $scope.percentDone = (done / n * 100).toFixed();
+          }));
+        });
+      });
+          
+			// Manage our returned data:
+      searchingAll.then($q.all).then(inTimeout(function(mineResultSets) {
+        buildStats($scope, mineResultSets);
+        nestOrganisms($scope, mineResultSets);
+
+        // Convert the categories objects into an array of objects (for filtering)
+        buildCategories($scope);
+        $scope.results = $scope.results.slice(); // trigger watches.
+        $scope.complete = true;
+      }));
+					
+		};
+		
 	}
 
   /*

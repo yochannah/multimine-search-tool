@@ -1,6 +1,12 @@
 <table class="table">
-    <div class="alert alert-info" ng-hide="filteredResults.length || (!searchTerm && !step.data.searchTerm)">
+    <div class="alert alert-info" ng-hide="filteredResults.length || !complete">
         <strong>Sorry</strong> no results matched your search terms.
+    </div>
+    <div class="progress progress-striped" ng-hide="complete || !step.data.searchTerm">
+        <div class="progress-bar progress-bar-success"
+             role="progressbar" aria-valuenow="{{percentDone}}" aria-valuemin="0" aria-valuemax="100" style="width: {{percentDone}}%">
+            <span class="sr-only">{{percentDone}}% Complete (success)</span>
+        </div>
     </div>
     <tr ng-repeat="result in filteredResults">
         <td>{{result.type}}</td>
