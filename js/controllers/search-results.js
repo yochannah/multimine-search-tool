@@ -2,9 +2,15 @@ define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
 	'use strict';	
 	
   var config = {
-	  timeout: 200
-	};
-	
+    timeout: 200,
+    categoryName: {
+      genomic: 'Organisms'
+    },
+    categories: {
+      genomic: ['organism.name', 'organism.shortName']
+    }
+  };
+
 	return ['$scope', '$q', '$timeout', '$filter', 'Mines', SearchResultsCtrl];
 	
 	function SearchResultsCtrl ($scope, $q, $timeout, $filter, Mines) {
@@ -110,9 +116,13 @@ define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
           names.forEach(inTimeout(addFacet.bind(null, $scope.facets.Types)));
         });
 
-        if (result.fields['organism.name']) {
-          addFacet($scope.facets.Organisms, result.fields['organism.name']);
-        }
+        result.mine.fetchModel().then(function (model) {
+          (config.categories[model.name] || []).forEach(inTimeout(function (prop) {
+            if (result.fields[prop]) {
+              addFacet($scope.facets[config.categoryName[model.name]], result.fields[prop]);
+            }
+          }));
+        });
       }));
       
     }
