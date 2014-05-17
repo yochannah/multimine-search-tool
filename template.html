@@ -1,12 +1,14 @@
-
-	<table>
-		<tr ng-repeat="result in results | selectedTags:categoryFilter | selectedGenus:genusFilter">
-			<td>{{result.type}}</td>
-			<td>{{result.mine.name}}</td>
-			<td>
-				<ul>
-					<li ng-repeat="(field, value) in result.fields">{{field}}: {{value}}</li>
-				</ul>
-			</td>
-		</tr>
-	</table>
+<table>
+    <div class="alert alert-info" ng-hide="filteredResults.length">
+        <strong>Sorry</strong> no results matched your search terms.
+    </div>
+    <tr ng-repeat="result in filteredResults">
+        <td>{{result.type}}</td>
+        <td>{{result.mine.name}}</td>
+        <td>
+            <ul>
+                <li ng-repeat="(field, value) in result.fields">{{field}}: {{value}}</li>
+            </ul>
+        </td>
+    </tr>
+</table>

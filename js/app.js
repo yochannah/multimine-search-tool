@@ -1,11 +1,15 @@
-define(['angular', './controllers', './filters'], function (angular) {
+/** Load sub modules, and get a reference to angular **/
+define(['angular', './controllers', './services'], function (angular) {
+
 	'use strict';
 	
-	angular.module('multimine-search-tool', [
-		'ngRoute', 'multimine-search-tool.controllers', 'multimine-search-tool.filters'])
-	.config(function ($routeProvider) {
+	var App = angular.module('multimine-search-tool', [
+		'ngRoute',
+    'multimine-search-tool.controllers',
+    'multimine-search-tool.services'
+  ]);
 
-
+  App.config(function ($routeProvider) {
 		$routeProvider.when('/', {
 			controller: 'MainCtrl',
 			templateUrl: 'index.html'
@@ -16,4 +20,5 @@ define(['angular', './controllers', './filters'], function (angular) {
 			redirectTo: '/'
 		});
 	});
+
 });

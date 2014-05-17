@@ -1,56 +1,20 @@
-define(['underscore', 'imjs'], function (_, intermine) {
+define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
 	'use strict';	
 	
-	var item = {
-	  mines: [
-	  	{
-	      name: "FlyMine",
-	      queryUrl: "http://www.flymine.org/query",
-	      baseUrl: "http://www.flymine.org/release-38.0/",
-	      server: "www.flymine.org"
-	     },
-	    {
-	      name: "MouseMine",
-	      queryUrl: "www.mousemine.org/mousemine",
-	      baseUrl: "http://www.mousemine.org/mousemine/",
-	      server: "www.mousemine.org"
-	    },
-	    {
-	      name: "ModMine",
-	      queryUrl: "http://intermine.modencode.org/query/",
-	      baseUrl: "http://intermine.modencode.org/release-32/",
-	      server: "intermine.modencode.org"
-	    },
-	    {
-	      name: "ZebraFishMine",
-	      queryUrl: "http://www.zebrafishmine.org",
-	      baseUrl: "http://www.zebrafishmine.org/",
-	      server: "www.zebrafishmine.org"
-	    },
-	    {
-	      name: "YeastMine",
-	      queryUrl: "http://yeastmine.yeastgenome.org/yeastmine",
-	      baseUrl: "http://yeastmine.yeastgenome.org/yeastmine/",
-	      server: "yeastmine.yeastgenome.org"
-	    },
-	    {
-	      name: "WormMine",
-	      queryUrl: "http://www.wormbase.org/tools/wormmine",
-	      baseUrl: "http://www.wormbase.org/tools/wormmine/",
-	      server: "www.wormbase.org"
-	    }
-	  ],
+  var config = {
 	  timeout: 200
 	};
 	
-	return ['$scope', '$q', '$timeout', '$filter', SearchResultsCtrl];
+	return ['$scope', '$q', '$timeout', '$filter', 'Mines', SearchResultsCtrl];
 	
-	function SearchResultsCtrl ($scope, $q, $timeout, $filter) {
+	function SearchResultsCtrl ($scope, $q, $timeout, $filter, Mines) {
 
+    // Define initial state.
 		$scope.stats = {categories: {}}; // Holds our statistics
 		$scope.results = []; // Holds our final results
-		$scope.genusFilter = [];
-		$scope.categoryFilter = [];
+    $scope.filterResults = [];
+		$scope.selectedGenera = [];
+		$scope.selectedOrganisms = [];
 
 		$scope.toggleFilter = function(arrName, value) {
 
@@ -63,35 +27,50 @@ define(['underscore', 'imjs'], function (_, intermine) {
 
 		};
 
-		$scope.callme = function (searchterm) {
+		$scope.search = function (searchterm) {
 			if (!searchterm) return;
 
 			// Manage our returned data:
-			
-			$q.all(_.map(item.mines, quicksearch.bind(null, searchterm, 200)))
-			  .then(function(mineResultSets) {
-				$timeout(function () {
-				
-					console.log("mineResultSets: ", mineResultSets);
+      var searchingAll = Mines.all().then(searchAllFor(searchterm, 200));
+          
+      searchingAll.then($q.all).then(inTimeout(function(mineResultSets) {
+        buildStats($scope, mineResultSets);
+        nestOrganisms($scope, mineResultSets);
 
-					buildStats($scope, mineResultSets);
-					nestOrganisms($scope, mineResultSets);
-
-					// Convert the categories objects into an array of objects (for filtering)
-					buildCategories($scope);
-				});
-			});
+        // Convert the categories objects into an array of objects (for filtering)
+        buildCategories($scope);
+        filterResults();
+      }));
 					
 		};
 		
-		$scope.$watch('step.data.searchTerm', $scope.callme);
+    // Make sure that the search reflects the search term, and that the filtered results
+    // reflect the facets.
+		$scope.$watch('step.data.searchTerm', $scope.search);
+    $scope.$watch('selectedGenera', filterResults);
+    $scope.$watch('selectedOrganisms', filterResults);
+
+    // Apply the filters (initially empty) to build the initial state. Needs $scope
+    function filterResults () {
+      $scope.filteredResults = applyFilters($scope.results, $scope.selectedGenera, $scope.selectedOrganisms);
+    }
+
+    // Helper for de-nesting blocks by wrapping a block in a timeout. Needs $timeout
+    function inTimeout (f) {
+      return function (x) { $timeout(function () { f(x); }); };
+    }
 	}
+
+  /*
+   * Return the result of passing the results through the tag filter and the organism filter.
+   */
+  function applyFilters(results, genera, organisms) {
+    return [filters.byTag(organisms), filters.byGenus(genera)].reduce(filterList, results);
+  }
 			
 	function buildStats ($scope, mineResultSets) {
-		_.forEach(mineResultSets, function(value, key) {
-
-			// Each set is the quicksearch results from a different mine
-			var nextSet = value;
+    // Each set is the quicksearch results from a different mine
+		_.forEach(mineResultSets, function(nextSet, key) {
 
 			// Not all mines return organisms in the same format. While not fool proof,
 			// it's likely to be result.fields['organism.name'] or result.fields['organism.shortName']/
@@ -101,28 +80,20 @@ define(['underscore', 'imjs'], function (_, intermine) {
 
 
 			// Calculate the number of results returned per category:
-			for (var i = 0; i < nextSet.results.length; i++) {
+      nextSet.results.forEach(function (result, i) {
 
 				// Attach the mine information to each result for filtering:
-				nextSet.results[i].mine = nextSet.mine;
-				var nextResult = nextSet.results[i];
-
+				result.mine = nextSet.mine;
 
 				// if (nextResult.type == "Publication") {
 				// 	continue;
 				// } else {
 
-					$scope.results.push(nextResult);
+        $scope.results.push(result);
 
-				// }
-
-				if (nextResult.type in $scope.stats.categories) {
-					$scope.stats.categories[nextResult.type] = $scope.stats.categories[nextResult.type] + 1;
-				} else {
-					$scope.stats.categories[nextResult.type] = 1;
-				}
-
-			}
+				// count occurances of results of this type.
+        increment($scope.stats.categories, result.type);
+			});
 
 		});
 		
@@ -202,15 +173,15 @@ define(['underscore', 'imjs'], function (_, intermine) {
 		});
 	}
 	
-	function quicksearch(needle, timeout, mine) {
+	function quicksearch(needle, timeout) {
+    return function (mine) {
 
-			var service = intermine.Service.connect({root: mine.queryUrl});
+			var service = intermine.Service.connect(mine);
 
 			// var rejection = setTimeout((function() {
 			// 	deferred.reject("TIMEOUT");
 			// 	$scope.$apply();
 			// }), 200);
-
 
 			return service.search(needle).then(function(values) {
 
@@ -220,7 +191,21 @@ define(['underscore', 'imjs'], function (_, intermine) {
 				// Resolve our promise
 				return values;
 			});
-
+    };
 	};
+
+  function searchAllFor(searchterm, timeout) {
+    return function (mines) {
+      return mines.map(quicksearch(searchterm, timeout));
+    }
+  };
+
+  // Null safe application of Array.filter(f) to list
+  function filterList (list, f) { return list && list.filter(f); };
+
+  // null safe mapping[key]++. Mutates mapping
+  function increment (mapping, key) {
+    mapping[key] = (mapping[key] || 0) + 1;
+  }
 
 });
