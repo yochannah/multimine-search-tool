@@ -33,7 +33,7 @@ define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
     function init () {
       $scope.complete = false;
       $scope.percentDone = 0;
-      $scope.stats = {categories: {}}; // Holds our statistics
+      $scope.facets = {Organisms: {}, Types: {}};
       $scope.results = []; // Holds our final results
       $scope.filterResults = [];
       $scope.selectedGenera = [];
@@ -69,20 +69,54 @@ define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
         });
       });
           
-			// Manage our returned data:
-      searchingAll.then($q.all).then(inTimeout(function(mineResultSets) {
-        buildStats($scope, mineResultSets);
-        nestOrganisms($scope, mineResultSets);
+			// process our returned data:
+      searchingAll.then(function (promises) {
+        promises.forEach(function (promise) {
+          promise.then(processResultSet);
+        });
+      });
 
-        // Convert the categories objects into an array of objects (for filtering)
-        buildCategories($scope);
-        $scope.results = $scope.results.slice(); // trigger watches.
+      searchingAll.then($q.all).then(inTimeout(function () {
         $scope.complete = true;
       }));
 					
-		};
-		
-	}
+		}
+
+    function processResultSet (resultSet) {
+
+      // Not all mines return organisms in the same format. While not fool proof,
+      // it's likely to be result.fields['organism.name'] or result.fields['organism.shortName']/
+      // We need to standardize in order for filtering to work!
+
+      // First handle organism.name:
+
+
+      // Calculate the number of results returned per category:
+      resultSet.results.forEach(inTimeout(function (result, i) {
+
+        // Attach the mine information to each result for filtering:
+        result.mine = resultSet.mine;
+
+        // if (nextResult.type == "Publication") {
+        // 	continue;
+        // } else {
+
+        $scope.results = $scope.results.concat([result]);
+
+        // count occurances of results of this type.
+
+        fetchDisplayNames(result.mine, result.type).then($q.all).then(function (names) {
+          result.typeNames = names;
+          names.forEach(inTimeout(addFacet.bind(null, $scope.facets.Types)));
+        });
+
+        if (result.fields['organism.name']) {
+          addFacet($scope.facets.Organisms, result.fields['organism.name']);
+        }
+      }));
+      
+    }
+  }
 
   /*
    * Return the result of passing the results through the tag filter and the organism filter.
@@ -90,109 +124,16 @@ define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
   function applyFilters(results, genera, organisms) {
     return [filters.byTag(organisms), filters.byGenus(genera)].reduce(filterList, results);
   }
-			
-	function buildStats ($scope, mineResultSets) {
-    // Each set is the quicksearch results from a different mine
-		_.forEach(mineResultSets, function(nextSet, key) {
-
-			// Not all mines return organisms in the same format. While not fool proof,
-			// it's likely to be result.fields['organism.name'] or result.fields['organism.shortName']/
-			// We need to standardize in order for filtering to work!
-
-			// First handle organism.name:
-
-
-			// Calculate the number of results returned per category:
-      nextSet.results.forEach(function (result, i) {
-
-				// Attach the mine information to each result for filtering:
-				result.mine = nextSet.mine;
-
-				// if (nextResult.type == "Publication") {
-				// 	continue;
-				// } else {
-
-        $scope.results.push(result);
-
-				// count occurances of results of this type.
-        increment($scope.stats.categories, result.type);
-			});
-
-		});
-		
-	}
-	
-	function nestOrganisms ($scope, mineResultSets) {
-		// Build our organism tree
-
-		var orgnest = [];
-
-		_.forEach(mineResultSets, function(value, key) {
-
-			var nextSet = value;
-			var orgTree = {"name": "All Organisms", "children": []};
-
-			// Calculate the number of results returned per category:
-			for (var i = 0; i < nextSet.results.length; i++) {
-
-				var nextResult = nextSet.results[i];
-
-				var nextOrganism = nextResult.fields["organism.name"];
-				if(nextOrganism != null) {
-
-					var split = nextOrganism.split(" ");
-
-					var genus = split[0];
-					var species = split[1];
-
-					nextResult.fields.genus = genus;
-					nextResult.fields.species = species;
-
-					var found = _.findWhere(orgnest, {genus: genus, species: species});
-
-					if (!found) {
-
-						orgnest.push({"genus": genus, "species": species});
-					}
-
-				}
-
-			}
-
-		});
-
-
-		$scope.orgnest = _.uniq(orgnest, function(item, key, a) {
-			return item.genus;
-		});
-		
-		// var nest = d3.nest()
-		//     .key(function(d) { return d.genus; })
-		//     .entries(orgnest);
-
-		// console.log("nested", JSON.stringify(nest, null, 2));
-		
-	}
-	
-	function buildCategories ($scope) {
-		var categories = [];
-		_.forEach($scope.stats.categories, function(value, key) {
-
-			categories.push({label: key, value: value});
-		});
-
-		$scope.categories = categories;
-		console.log("scope categories:", JSON.stringify($scope.categories));
-
-		console.log("scope.results:", $scope.results);
-	}
 	
 	/** Returns Promise<String> 
 	 * eg fetchDisplayName(service, "Gene.symbol") => Promise["Gene > Symbol"]
 	**/
-	function fetchDisplayName (service, path) {
+	function fetchDisplayNames (service, className) {
 		return service.fetchModel().then(function (model) {
-			return model.makePath(path).getDisplayName();
+      var types = [className].concat(model.getAncestorsOf(className));
+      return types.map(function (path) {
+        return model.makePath(path).getDisplayName();
+      });
 		});
 	}
 	
@@ -200,6 +141,7 @@ define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
     return function (mine) {
 
 			var service = intermine.Service.connect(mine);
+      service.name = mine.name;
 
 			// var rejection = setTimeout((function() {
 			// 	deferred.reject("TIMEOUT");
@@ -209,13 +151,13 @@ define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
 			return service.search(needle).then(function(values) {
 
 				// Attach the mine to the result for later filtering
-				values.mine = mine;
+				values.mine = service;
 
 				// Resolve our promise
 				return values;
 			});
     };
-	};
+	}
 
   function searchAllFor(searchterm, timeout) {
     return function (mines) {
@@ -229,6 +171,11 @@ define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
   // null safe mapping[key]++. Mutates mapping
   function increment (mapping, key) {
     mapping[key] = (mapping[key] || 0) + 1;
+  }
+
+  function addFacet(facets, thing) {
+    var facet = (facets[thing] || (facets[thing] = {count: 0}));
+    facet.count++;
   }
 
 });

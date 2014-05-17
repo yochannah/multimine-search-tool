@@ -50,35 +50,15 @@
                 <h1 ng-show="results.length > 0">{{results.length}} results in {{categories.length}} categories.</h1>
             </div>
 
-<!-- 
     		<div class="col-xs-2">
-        		<div class="panel panel-primary">
-        			<div class="panel-heading well-sm">Filters</div>
-        			<h4>Organisms</h4>
+                <ng-include src="'facets.html'"></ng-include>
+    		</div>
 
-		        	<div ng-click="toggleFilter('genusFilter', orgs.genus)"
-				  		class="category"
-				  		ng-class="{selected: genusFilter.indexOf(orgs.genus) != -1}"
-				  		ng-repeat="orgs in orgnest">{{orgs.genus}}</div>
+    		<div class="col-xs-10">
 
-		  			<div class="row"></div>
+    			<div class="panel panel-default">
 
-        			<h4>Data Types</h4>
-
-		        	<div ng-click="toggleFilter('categoryFilter', category.label)" class="category" ng-class="{selected: categoryFilter.indexOf(category.label) != -1}" ng-repeat="category in categories">{{category.label}} ({{category.value}})
-			  		</div>
-	  		
-        		</div>
-    		</div> -->
-
-    		<div class="col-xs-12">
-
-    			<div class="panel panel-primary">
-
-    				<div class="panel-heading well-sm">Results</div>
-
-
-
+    				<div class="panel-heading">Results</div>
 
 		    		<ng-include src="'template.html'"></ng-include>
 				</div>
