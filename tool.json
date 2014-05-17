@@ -2,6 +2,6 @@
 	"capabilities": ["now"],
 	"type": "native",
 	"templateURI": "./template.html",
-	"controllerURI": "./tool",
+	"controllerURI": "./js/controllers/search-results",
 	"heading": "Keyword Search Results"
 }
