@@ -1,4 +1,4 @@
-<div class="panel panel-primary">
+<div class="panel panel-primary facets">
     <div class="panel-heading">Facets</div>
 
     <div class="panel-body">
@@ -8,7 +8,7 @@
 
             <button
                 ng-repeat="(facet, info) in facetSet"
-                class="col-xs-12 btn btn-sm btn-default"
+                class="col-xs-12 facet btn btn-sm btn-default"
                 ng-class="{active: info.selected}"
                 ng-click="info.selected = !info.selected">
                 <span class="pull-right badge">{{info.count}}</span>
