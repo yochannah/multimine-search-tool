@@ -3,6 +3,9 @@ define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
 	
   var config = {
     timeout: 200,
+    defaultCategory: {
+      genomic: 'organism.name'
+    },
     categoryName: {
       genomic: 'Organisms'
     },
@@ -38,6 +41,7 @@ define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
 
     function init () {
       $scope.complete = false;
+      $scope.categories = []; // Would be nice to avoid this.
       $scope.percentDone = 0;
       $scope.facets = {Organisms: {}, Types: {}};
       $scope.results = []; // Holds our final results
@@ -118,8 +122,21 @@ define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
 
         result.mine.fetchModel().then(function (model) {
           (config.categories[model.name] || []).forEach(inTimeout(function (prop) {
+            var defaultProp = config.defaultCategory[model.name]
+              , facetGroup = $scope.facets[config.categoryName[model.name]];
             if (result.fields[prop]) {
-              addFacet($scope.facets[config.categoryName[model.name]], result.fields[prop]);
+              if (defaultProp === prop) { // If supplied use it.
+                addFacet(facetGroup, result.fields[prop]);
+              } else { // if not, query for it and use that.
+                result.mine
+                      .rows({select: defaultProp, from: result.type, where: {id: result.id}})
+                      .then(inTimeout(function (names) {
+                        if (names[0]) {
+                          result.fields[prop] = names[0];
+                          addFacet(facetGroup, names[0]);
+                        }
+                      }));
+              }
             }
           }));
         });
