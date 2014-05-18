@@ -11,8 +11,9 @@ body {
     font-weight: 300;
 }
 
-
-
+.keyword-search-results .field-name {
+    width: 30%;
+}
 
 .centeredbox {
 
@@ -165,8 +166,6 @@ table {
 }
 
 table tr td {
-
-	border: 1px solid black;
 }
 
 .resultPanel {
