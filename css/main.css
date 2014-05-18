@@ -57,6 +57,12 @@ tree-chart{
       /*border: 1px solid white;*/
 }
 
+.facets .facet.btn {
+    border-bottom-width: 0;
+}
+.facets .facet.btn:last-child {
+    border-bottom-width: 1px;
+}
 
 .resultitem {
 	width: 100px;
