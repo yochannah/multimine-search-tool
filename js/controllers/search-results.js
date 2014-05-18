@@ -116,6 +116,7 @@ define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
             , defaultProp = config.defaultCategory[model.name]
             , facetName = config.categoryName[model.name]
             , facetGroup = $scope.facets[facetName];
+          if (!prop) return;
           if (defaultProp === prop) { // If supplied use it.
               $timeout(addFacet.bind(null, facetGroup, facetName, result.fields[prop]));
           } else { // if not, query for it and use that.
