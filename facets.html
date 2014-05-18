@@ -7,12 +7,12 @@
             <h4>{{name}}</h4>
 
             <button
-                ng-repeat="(facet, info) in facetSet"
+                ng-repeat="info in facetSet | mappingToArray | orderBy:'count':true"
                 class="col-xs-12 facet btn btn-sm btn-default"
                 ng-class="{active: info.selected}"
                 ng-click="info.selected = !info.selected">
                 <span class="pull-right badge">{{info.count}}</span>
-                <span class="pull-left">{{facet}}</span>
+                <span class="pull-left">{{info.$key}}</span>
             </button>
         </div>
 

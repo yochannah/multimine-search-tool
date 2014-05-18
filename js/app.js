@@ -1,5 +1,5 @@
 /** Load sub modules, and get a reference to angular **/
-define(['angular', './controllers', './services'], function (angular) {
+define(['angular', 'underscore', './controllers', './services'], function (angular, _) {
 
 	'use strict';
 	
@@ -8,6 +8,13 @@ define(['angular', './controllers', './services'], function (angular) {
     'multimine-search-tool.controllers',
     'multimine-search-tool.services'
   ]);
+
+  App.filter('mappingToArray', function() { return function(obj) {
+    if (!(obj instanceof Object)) return obj;
+    return _.map(obj, function(val, key) {
+      return Object.defineProperty(val, '$key', {__proto__: null, value: key});
+    });
+  }});
 
   App.config(function ($routeProvider) {
 		$routeProvider.when('/', {
