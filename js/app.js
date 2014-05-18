@@ -16,6 +16,16 @@ define(['angular', 'underscore', './controllers', './services'], function (angul
     });
   }});
 
+  App.directive('blurOnClick', function () {
+    return {
+      restrict: 'A',
+      link: function (scope, $element) {
+        var el = $element[0];
+        $element.on('click', el.blur.bind(el));
+      }
+    };
+  });
+
   App.config(function ($routeProvider) {
 		$routeProvider.when('/', {
 			controller: 'MainCtrl',
