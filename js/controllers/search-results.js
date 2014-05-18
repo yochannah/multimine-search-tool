@@ -21,23 +21,14 @@ define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
     // Define initial state.
     init();
 
-		$scope.toggleFilter = function(arrName, value) {
-
-			if ($scope[arrName].indexOf(value) != -1)
-			{
-				$scope[arrName] = _.without($scope[arrName], value);
-			} else {
-				$scope[arrName].push(value);
-			}
-
-		};
-
     // Make sure that the search reflects the search term, and that the filtered results
     // reflect the facets.
 		$scope.$watch('step.data.searchTerm', search);
+    $scope.$watch(_.compose(JSON.stringify, watchForCategories), inTimeout(function () {
+      $scope.categories = watchForCategories($scope);
+    }));
+    $scope.$watch('categories', filterResults);
     $scope.$watch('results', filterResults);
-    $scope.$watch('selectedGenera', filterResults);
-    $scope.$watch('selectedOrganisms', filterResults);
 
     function init () {
       $scope.complete = false;
@@ -52,7 +43,7 @@ define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
 
     // Apply the filters (initially empty) to build the initial state. Needs $scope
     function filterResults () {
-      $scope.filteredResults = applyFilters($scope.results, $scope.selectedGenera, $scope.selectedOrganisms);
+      $scope.filteredResults = applyFilters($scope.results, ($scope.categories || []));
     }
 
     // Helper for de-nesting blocks by wrapping a block in a timeout. Needs $timeout
@@ -117,28 +108,27 @@ define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
 
         fetchDisplayNames(result.mine, result.type).then($q.all).then(function (names) {
           result.typeNames = names;
-          names.forEach(inTimeout(addFacet.bind(null, $scope.facets.Types)));
+          names.forEach(inTimeout(addFacet.bind(null, $scope.facets.Types, 'type')));
         });
 
         result.mine.fetchModel().then(function (model) {
-          (config.categories[model.name] || []).forEach(inTimeout(function (prop) {
-            var defaultProp = config.defaultCategory[model.name]
-              , facetGroup = $scope.facets[config.categoryName[model.name]];
-            if (result.fields[prop]) {
-              if (defaultProp === prop) { // If supplied use it.
-                addFacet(facetGroup, result.fields[prop]);
-              } else { // if not, query for it and use that.
-                result.mine
-                      .rows({select: defaultProp, from: result.type, where: {id: result.id}})
-                      .then(inTimeout(function (names) {
-                        if (names[0]) {
-                          result.fields[prop] = names[0];
-                          addFacet(facetGroup, names[0]);
-                        }
-                      }));
-              }
-            }
-          }));
+          var prop = _.find(config.categories[model.name] || [], function (p) { return result.fields[p]; })
+            , defaultProp = config.defaultCategory[model.name]
+            , facetName = config.categoryName[model.name]
+            , facetGroup = $scope.facets[facetName];
+          if (defaultProp === prop) { // If supplied use it.
+              $timeout(addFacet.bind(null, facetGroup, facetName, result.fields[prop]));
+          } else { // if not, query for it and use that.
+            result.mine
+                  .rows({select: defaultProp, from: result.type, where: {id: result.id}})
+                  .then(inTimeout(function (rows) {
+                    if (rows[0]) {
+                      var value = rows[0][0];
+                      result.fields[defaultProp] = value;
+                      addFacet(facetGroup, facetName, value);
+                    }
+                  }));
+          }
         });
       }));
       
@@ -148,10 +138,55 @@ define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
   /*
    * Return the result of passing the results through the tag filter and the organism filter.
    */
-  function applyFilters(results, genera, organisms) {
-    return [filters.byTag(organisms), filters.byGenus(genera)].reduce(filterList, results);
+  function applyFilters(results, categories) {
+    var types = categories.filter(propIs('name', 'type')).filter(isSelected)
+      , organisms = categories.filter(propIs('name', 'Organisms')).filter(isSelected);
+
+    console.log(_.uniq(_.pluck(categories, 'name')), _.pluck(types, 'value'), _.pluck(organisms, 'value'));
+
+    return [isOneOf(types), belongsToOneOf(organisms)].reduce(filterList, results);
   }
-	
+
+  function belongsToOneOf (organisms) {
+    if (!organisms || !organisms.length) {
+      return always(true);
+    } else {
+      return function (result) {
+        return organisms.some(function (orgFacet) {
+          return orgFacet.value === result.fields['organism.name'];
+        });
+      };
+    }
+  }
+
+  function isOneOf (types) {
+    if (!types || !types.length) {
+      return always(true);
+    } else {
+      return function (result) {
+        return overlaps(_.pluck(types, 'value'), result.typeNames);
+      };
+    }
+  }
+
+  function always(value) {
+    return function() { return value; };
+  }
+
+  function overlaps(xs, ys) {
+    return xs && ys && xs.some(function (x) { return ys.indexOf(x) >= 0; });
+  }
+
+  function propIs(prop, value) {
+    return function(obj) {
+      return obj && obj[prop] === value;
+    };
+  }
+
+  function isSelected(x) {
+    return x && x.selected;
+  }
+
 	/** Returns Promise<String> 
 	 * eg fetchDisplayName(service, "Gene.symbol") => Promise["Gene > Symbol"]
 	**/
@@ -200,9 +235,17 @@ define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
     mapping[key] = (mapping[key] || 0) + 1;
   }
 
-  function addFacet(facets, thing) {
-    var facet = (facets[thing] || (facets[thing] = {count: 0}));
+  function addFacet(facets, name, thing) {
+    var facet = (facets[thing] || (facets[thing] = {name: name, value: thing, count: 0}));
     facet.count++;
+  }
+
+  function watchForCategories(scope) {
+    var categories = [];
+    _.forEach(scope.facets, function (facetGroup, name) {
+      categories = categories.concat(_.values(facetGroup));
+    });
+    return categories;
   }
 
 });
