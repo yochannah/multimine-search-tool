@@ -1,4 +1,9 @@
-define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
+define([
+    'underscore',
+    'imjs',
+    './results-row'
+    ], function (_, intermine, RowController) {
+
 	'use strict';	
 	
   var config = {
@@ -20,6 +25,8 @@ define(['underscore', 'imjs', '../filters'], function (_, intermine, filters) {
 
     // Define initial state.
     init();
+
+    $scope.RowController = RowController;
 
     // Make sure that the search reflects the search term, and that the filtered results
     // reflect the facets.

@@ -8,7 +8,7 @@
             <span class="sr-only">{{percentDone}}% Complete (success)</span>
         </div>
     </div>
-    <tr ng-repeat="result in filteredResults">
+    <tr ng-controller="RowController" ng-repeat="result in filteredResults">
         <td>
             <strong>{{result.typeNames[0]}}</strong>
             <div class="text-muted">{{result.typeNames.slice(1).join(', ')}}</div>
@@ -17,7 +17,7 @@
         <td>
             <table class="table table-bordered table-hover table-condensed">
                 <tr ng-repeat="(field, value) in result.fields">
-                    <td class="field-name"><em>{{field}}</em></td>
+                    <td class="field-name"><em>{{fieldNames[field]}}</em></td>
                     <td>{{value}}</td>
             </table>
         </td>
