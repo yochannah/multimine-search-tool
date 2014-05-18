@@ -19,7 +19,9 @@
 		<style>[ng-cloak] { display: none; }</style>
 	</head>
 
-	<body ng-controller="DemoCtrl">
+	<body ng-cloak ng-controller="DemoCtrl">
+
+      <div class="container-fluid">
 
  		<div class="row" ng-controller="SearchInputCtrl">
 
@@ -64,6 +66,7 @@
 				</div>
     		</div>
 		</div>
+      </div>
 
 	</body>
 </html>
