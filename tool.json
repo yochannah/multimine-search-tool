@@ -3,5 +3,6 @@
 	"type": "native",
 	"templateURI": "./template.html",
 	"controllerURI": "./js/controllers/search-results",
-	"heading": "Keyword Search Results"
+	"heading": "Keyword Search Results",
+  "style": "./css/search-results.css"
 }
