@@ -41,7 +41,10 @@ define([
       $scope.complete = false;
       $scope.categories = []; // Would be nice to avoid this.
       $scope.percentDone = 0;
-      $scope.facets = {Organisms: {}, Types: {}};
+      if (!$scope.state) {
+        $scope.state = {};
+      }
+      $scope.state.facets = {Organisms: {}, Types: {}};
       $scope.results = []; // Holds our final results
       $scope.filterResults = [];
       $scope.selectedGenera = [];
@@ -70,10 +73,12 @@ define([
       searchingAll.then(function (promises) {
         var n = promises.length;
         promises.forEach(function (promise) {
-          promise.then(inTimeout(function () {
+          var fn = inTimeout(function () {
             done++;
             $scope.percentDone = (done / n * 100).toFixed();
-          }));
+            $scope.complete = (done === n);
+          });
+          promise.then(fn, fn);
         });
       });
           
@@ -83,10 +88,6 @@ define([
           promise.then(processResultSet);
         });
       });
-
-      searchingAll.then($q.all).then(inTimeout(function () {
-        $scope.complete = true;
-      }));
 					
 		}
 
@@ -115,14 +116,14 @@ define([
 
         fetchDisplayNames(result.mine, result.type).then($q.all).then(function (names) {
           result.typeNames = names;
-          names.forEach(inTimeout(addFacet.bind(null, $scope.facets.Types, 'type')));
+          names.forEach(inTimeout(addFacet.bind(null, $scope.state.facets.Types, 'type')));
         });
 
         result.mine.fetchModel().then(function (model) {
           var prop = _.find(config.categories[model.name] || [], function (p) { return result.fields[p]; })
             , defaultProp = config.defaultCategory[model.name]
             , facetName = config.categoryName[model.name]
-            , facetGroup = $scope.facets[facetName];
+            , facetGroup = $scope.state.facets[facetName];
           if (!prop) return;
           if (defaultProp === prop) { // If supplied use it.
               $timeout(addFacet.bind(null, facetGroup, facetName, result.fields[prop]));
@@ -149,8 +150,6 @@ define([
   function applyFilters(results, categories) {
     var types = categories.filter(propIs('name', 'type')).filter(isSelected)
       , organisms = categories.filter(propIs('name', 'Organisms')).filter(isSelected);
-
-    console.log(_.uniq(_.pluck(categories, 'name')), _.pluck(types, 'value'), _.pluck(organisms, 'value'));
 
     return [isOneOf(types), belongsToOneOf(organisms)].reduce(filterList, results);
   }
@@ -250,9 +249,11 @@ define([
 
   function watchForCategories(scope) {
     var categories = [];
-    _.forEach(scope.facets, function (facetGroup, name) {
-      categories = categories.concat(_.values(facetGroup));
-    });
+    if (scope.state && scope.state.facets) {
+      _.forEach(scope.state.facets, function (facetGroup, name) {
+        categories = categories.concat(_.values(facetGroup));
+      });
+    }
     return categories;
   }
 
