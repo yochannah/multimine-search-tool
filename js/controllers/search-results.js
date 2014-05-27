@@ -12,7 +12,7 @@ define([
       genomic: 'organism.name'
     },
     categoryName: {
-      genomic: 'Organisms'
+      genomic: 'Organism'
     },
     categories: {
       genomic: ['organism.name', 'organism.shortName']
@@ -56,7 +56,7 @@ define([
       if (!$scope.state) {
         $scope.state = {};
       }
-      $scope.state.facets = {Organisms: {}, Types: {}};
+      $scope.state.facets = {Organism: {}, Type: {}};
       $scope.results = []; // Holds our final results
       $scope.filterResults = [];
       $scope.selectedGenera = [];
@@ -157,7 +157,7 @@ define([
         // Update type facets.
         fetchDisplayNames(result.mine, result.type).then($q.all).then(function (names) {
           result.typeNames = names;
-          names.forEach(inTimeout(addFacet.bind(null, $scope.state.facets.Types, 'type')));
+          names.forEach(inTimeout(addFacet.bind(null, $scope.state.facets.Type, 'type')));
         });
 
         // Update category facets (usually means organism).
@@ -199,7 +199,7 @@ define([
    */
   function applyFilters(results, categories) {
     var types = categories.filter(propIs('name', 'type')).filter(isSelected)
-      , organisms = categories.filter(propIs('name', 'Organisms')).filter(isSelected);
+      , organisms = categories.filter(propIs('name', 'Organism')).filter(isSelected);
 
     return [isOneOf(types), belongsToOneOf(organisms)].reduce(filterList, results);
   }
