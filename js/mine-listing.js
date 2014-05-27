@@ -10,7 +10,7 @@ define([], function () {
     },
     {
       name: "ModMine",
-      root: "http://intermine.modencode.org/query/"
+      root: "http://intermine.modencode.org/query/service"
     },
     {
       name: "ZebraFishMine",
