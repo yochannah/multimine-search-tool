@@ -23,6 +23,14 @@ define([
 	
 	function SearchResultsCtrl ($scope, $q, $timeout, $filter, Mines) {
 
+    var allMines = Mines.all().then(function (mines) {
+      return mines.map(function (mine) {
+        var service = intermine.Service.connect(mine);
+        service.name = mine.name;
+        return service;
+      });
+    });
+
     // Define initial state.
     init();
 
@@ -36,7 +44,11 @@ define([
     }));
     $scope.$watch('categories', filterResults);
     $scope.$watch('results', filterResults);
+    $scope.$watch('filteredResults', _.throttle(reportResults, 250));
 
+    //--- Controller scoped functions.
+
+    // (Re-)Initialise the state of the controller.
     function init () {
       $scope.complete = false;
       $scope.categories = []; // Would be nice to avoid this.
@@ -51,21 +63,57 @@ define([
       $scope.selectedOrganisms = [];
     }
 
+    var frn = 0;
+
     // Apply the filters (initially empty) to build the initial state. Needs $scope
     function filterResults () {
       $scope.filteredResults = applyFilters($scope.results, ($scope.categories || []));
     }
 
-    // Helper for de-nesting blocks by wrapping a block in a timeout. Needs $timeout
-    function inTimeout (f) {
-      return function (x) { $timeout(function () { f(x); }); };
+    var n = 0;
+
+    // Report the values found.
+    // emits a 'has' message for each set of items found at a mine.
+    function reportResults (filteredResults) {
+      var byMine = _.groupBy(filteredResults, by('mine.root'));
+      var allTypes = _.pluck($scope.results, 'type');
+      allMines.then(function (mines) {
+        mines.forEach(function (mine) {
+          mine.fetchModel().then(function (model) {
+            var results, byType, ids, types, commonType, type;
+            results = (byMine[mine.root] || []);
+
+            byType = _.groupBy(results, by('type'));
+            allTypes
+             .filter(function (type) { return !byType[type]; })
+             .forEach(function (type) { byType[type] = []; });
+            ids = _.pluck(results, 'id');
+            types = _.uniq(_.pluck(results, 'type'));
+            for (type in byType) {
+              hasItems(mine, byType[type].map(by('id')), type);
+            }
+          }).then(null, console.error.bind(console));
+        });
+      });
+    }
+
+    // Emit a message about the availability of sets of items.
+    function hasItems(mine, ids, type) {
+      $scope.$emit('has', {
+        what: 'ids',
+        key: mine.root + type,
+        data: {
+          service: {root: mine.root, name: mine.name},
+          request: {ids: ids, type: type}
+        }
+      });
     }
 
 		function search (searchterm) {
 			if (!searchterm) return;
 
       // Start the search.
-      var searchingAll = Mines.all().then(searchAllFor(searchterm, 200));
+      var searchingAll = allMines.then(searchAllFor(searchterm, 200));
       var done = 0;
       init(); // Reinitialise.
 
@@ -97,28 +145,22 @@ define([
       // it's likely to be result.fields['organism.name'] or result.fields['organism.shortName']/
       // We need to standardize in order for filtering to work!
 
-      // First handle organism.name:
-
-
       // Calculate the number of results returned per category:
       resultSet.results.forEach(inTimeout(function (result, i) {
 
         // Attach the mine information to each result for filtering:
         result.mine = resultSet.mine;
 
-        // if (nextResult.type == "Publication") {
-        // 	continue;
-        // } else {
-
+        // Use concat to trigger dirty check.
         $scope.results = $scope.results.concat([result]);
 
-        // count occurances of results of this type.
-
+        // Update type facets.
         fetchDisplayNames(result.mine, result.type).then($q.all).then(function (names) {
           result.typeNames = names;
           names.forEach(inTimeout(addFacet.bind(null, $scope.state.facets.Types, 'type')));
         });
 
+        // Update category facets (usually means organism).
         result.mine.fetchModel().then(function (model) {
           var prop = _.find(config.categories[model.name] || [], function (p) { return result.fields[p]; })
             , defaultProp = config.defaultCategory[model.name]
@@ -140,8 +182,16 @@ define([
           }
         });
       }));
-      
+
     }
+
+    // Helper for de-nesting blocks by wrapping a block in a timeout.
+    // Needs $timeout so must be declared within controller injection scope.
+    // _could_ be made into a service, but that would be overkill.
+    function inTimeout (f) {
+      return function (x) { $timeout(function () { f(x); }); };
+    }
+
   }
 
   /*
@@ -207,10 +257,7 @@ define([
 	}
 	
 	function quicksearch(needle, timeout) {
-    return function (mine) {
-
-			var service = intermine.Service.connect(mine);
-      service.name = mine.name;
+    return function (service) {
 
 			// var rejection = setTimeout((function() {
 			// 	deferred.reject("TIMEOUT");
@@ -255,6 +302,20 @@ define([
       });
     }
     return categories;
+  }
+
+  function by(x, orVal) {
+    var parts = x.split('.');
+    if (!parts.length) throw new Error("At least on property expected");
+    if (parts.length === 1) {
+      return function (y) { return (y && y[x]) || orVal; };
+    } else {
+      return function (y) {
+        return parts.reduce(function (what, prop) {
+          return (what && what[prop]) || orVal;
+        }, y);
+      };
+    }
   }
 
 });
