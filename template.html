@@ -21,7 +21,7 @@
                 <span class="summary-value"
                       ng-if="summaryValue.value != null"
                       ng-repeat="summaryValue in result.summaryValues">
-                    {{summaryValue.value}}
+                    {{summaryValue.value | limitTo:50}}
                 </span>
             </div>
             <table class="table table-bordered table-hover table-condensed">
