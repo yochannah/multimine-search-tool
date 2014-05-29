@@ -150,6 +150,7 @@ define([
 
         // Attach the mine information to each result for filtering:
         result.mine = resultSet.mine;
+        result.selected = true; // Selected by default.
 
         // Use concat to trigger dirty check.
         $scope.results = $scope.results.concat([result]);

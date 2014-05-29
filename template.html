@@ -8,15 +8,24 @@
             <span class="sr-only">{{percentDone}}% Complete (success)</span>
         </div>
     </div>
-    <tr ng-controller="RowController" ng-repeat="result in filteredResults">
-        <td>
+    <tr ng-controller="RowController"
+        ng-repeat="result in filteredResults | orderBy:'-relevance' | limitTo:25">
+        <td ng-click="result.selected = !result.selected">
+            <i class="fa" ng-class="{'fa-bookmark': result.selected, 'fa-bookmark-o': !result.selected}"></i>
             <strong>{{result.typeNames[0]}}</strong>
             <div class="text-muted">{{result.typeNames.slice(1).join(', ')}}</div>
         </td>
         <td>{{result.mine.name}}</td>
         <td>
+            <div class="summary-fields" ng-hide="result.selected">
+                <span class="summary-value"
+                      ng-if="summaryValue.value != null"
+                      ng-repeat="summaryValue in result.summaryValues">
+                    {{summaryValue.value}}
+                </span>
+            </div>
             <table class="table table-bordered table-hover table-condensed">
-                <tr ng-repeat="(field, value) in result.fields">
+                <tr ng-repeat="(field, value) in result.fields" ng-show="result.selected">
                     <td class="field-name"><em>{{fieldNames[field]}}</em></td>
                     <td>{{value}}</td>
             </table>

@@ -2,3 +2,12 @@
     width: 30%;
 }
 
+.summary-fields .summary-value {
+    border: 1px solid #ddd;
+    margin-right: 0.5em;
+    margin-bottom: 0.4em;
+    display: inline-block;
+    padding: 0.25em;
+    background: #f5f5f5;
+}
+
