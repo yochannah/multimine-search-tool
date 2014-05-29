@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="css/bootstrap.min.css">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/search-results.css">
-
+  <link rel="stylesheet" href="http://cdn.intermine.org/css/font-awesome/4.x/css/font-awesome.min.css">
 
   <script charset="UTF-8"
           data-main="main"
@@ -47,12 +47,6 @@
 
     <div class="row" ng-controller="SearchResultsCtrl" ng-show="step.data.searchTerm">
 
-      <div class="searchbox">
-        <h1 ng-show="results.length > 0">
-          {{results.length}} results in {{categories.length}} categories.
-        </h1>
-      </div>
-
       <div class="col-xs-3">
 
         <ng-include src="'facets.html'"></ng-include>
@@ -76,7 +70,9 @@
 
         <div class="panel panel-default">
 
-          <div class="panel-heading">Results</div>
+          <div class="panel-heading">
+              <ng-include src="'panel-heading.html'"></ng-include>
+          </div>
 
           <ng-include src="'template.html'"></ng-include>
         </div>
