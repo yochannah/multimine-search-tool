@@ -44,7 +44,9 @@ define([
     }));
     $scope.$watch('categories', filterResults);
     $scope.$watch('results', filterResults);
-    $scope.$watch('filteredResults', _.throttle(reportResults, 250));
+    $scope.$watch(watchFilteredResults, _.throttle(function () {
+      reportResults($scope.filteredResults);
+    }, 250));
 
     //--- Controller scoped functions.
 
@@ -75,8 +77,11 @@ define([
     // Report the values found.
     // emits a 'has' message for each set of items found at a mine.
     function reportResults (filteredResults) {
-      var byMine = _.groupBy(filteredResults, by('mine.root'));
-      var allTypes = _.pluck($scope.results, 'type');
+      var allTypes = _.pluck($scope.results, 'type')
+        , byMine   = _.chain(filteredResults)
+                      .where({selected: true})
+                      .groupBy(by('mine.root'))
+                      .value();
       allMines.then(function (mines) {
         mines.forEach(function (mine) {
           mine.fetchModel().then(function (model) {
@@ -303,6 +308,10 @@ define([
       });
     }
     return categories;
+  }
+
+  function watchFilteredResults (scope) {
+    return JSON.stringify(scope.filteredResults);
   }
 
   function by(x, orVal) {
