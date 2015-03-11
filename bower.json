@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "dependencies": {
     "underscore": "^1.6.0",
-    "imjs": "^3.2.x",
+    "imjs": "^3.2.x"
   },
   "devDependencies": {
     "angular": "1.2.16",
