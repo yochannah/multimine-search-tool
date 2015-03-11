@@ -4,6 +4,6 @@
 	"templateURI": "./template.html",
 	"controllerURI": "./js/controllers/search-results",
 	"heading": "Keyword Search Results",
-  "panelHeading": "./panel-heading.html",
-  "style": "./css/search-results.css"
+    "panelHeading": "./panel-heading.html",
+    "style": "./css/search-results.css"
 }
