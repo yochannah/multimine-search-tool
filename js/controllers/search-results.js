@@ -13,9 +13,6 @@ define([
     },
     categoryName: {
       genomic: 'Organism'
-    },
-    categories: {
-      genomic: ['organism.name', 'organism.shortName']
     }
   };
 
@@ -118,7 +115,7 @@ define([
 			if (!searchterm) return;
 
       // Start the search.
-      var searchingAll = allMines.then(searchAllFor(searchterm, 200));
+      var searchingAll = allMines.then(searchAllFor(searchterm));
       var done = 0;
       init(); // Reinitialise.
 
@@ -145,6 +142,7 @@ define([
 		}
 
     function processResultSet (resultSet) {
+      console.log(resultSet);
 
       // Not all mines return organisms in the same format. While not fool proof,
       // it's likely to be result.fields['organism.name'] or result.fields['organism.shortName']/
@@ -262,28 +260,23 @@ define([
 		});
 	}
 	
-	function quicksearch(needle, timeout) {
+	function quicksearch(needle) {
     return function (service) {
 
-			// var rejection = setTimeout((function() {
-			// 	deferred.reject("TIMEOUT");
-			// 	$scope.$apply();
-			// }), 200);
-
-			return service.search(needle).then(function(values) {
+			return service.post('search', {q: needle, size: 100}).then(function(result) {
 
 				// Attach the mine to the result for later filtering
-				values.mine = service;
+				result.mine = service;
 
 				// Resolve our promise
-				return values;
+				return result;
 			});
     };
 	}
 
-  function searchAllFor(searchterm, timeout) {
+  function searchAllFor(searchterm) {
     return function (mines) {
-      return mines.map(quicksearch(searchterm, timeout));
+      return mines.map(quicksearch(searchterm));
     }
   };
 
