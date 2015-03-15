@@ -1,11 +1,22 @@
 define(['angular', 'underscore', './controllers/search-results'], function (angular, _, SearchResultsCtrl) {
 
-	var Controllers = angular.module('multimine-search-tool.controllers', []);
+  'use strict';
 
+	var Controllers = angular.module('multimine-search-tool.controllers', [])
+                           .controller('DemoCtrl',          DemoCtrl)
+                           .controller('SearchResultsCtrl', SearchResultsCtrl)
+                           .controller('SearchInputCtrl',   SearchInputCtrl);
+
+  // Currently does nothing.
+  function SearchInputCtrl (scope) {
+  }
+  SearchInputCtrl.$inject = ['$scope'];
+
+  // The demo controller.
   function DemoCtrl (scope, timeout, queryParams) {
 
     console.log(queryParams);
-    scope.step     = {data: {searchTerm: queryParams.q}};
+    scope.step     = {data: {searchTerm: (queryParams.q || 'lola')}};
     scope.messages = {ids: {}};
 
     scope.sumAvailable = 0;
@@ -27,14 +38,6 @@ define(['angular', 'underscore', './controllers/search-results'], function (angu
     });
 
   }
-
   DemoCtrl.$inject = ['$scope', '$timeout', 'queryParams'];
-
-	Controllers.controller('DemoCtrl', DemoCtrl);
-
-	Controllers.controller('SearchInputCtrl', ['$scope', function (scope) {
-  }]);
-
-	Controllers.controller('SearchResultsCtrl', SearchResultsCtrl);
 
 });

@@ -1,6 +1,11 @@
 <table class="table keyword-search-results">
-    <div class="alert alert-info" ng-hide="filteredResults.length || !complete">
+    <div class="alert alert-info" ng-hide="state.results.length || !complete">
         <strong>Sorry</strong> no results matched your search terms.
+    </div>
+    <div class="alert alert-warning"
+         ng-show="showFailed && failed > 0">
+        <span ng-click="showFailed = false" class="close">dismiss</span>
+        We did not receive a response from {{ failed }} sources.
     </div>
     <div class="progress progress-striped" ng-hide="complete || !step.data.searchTerm">
         <div class="progress-bar progress-bar-success"
@@ -8,12 +13,11 @@
             <span class="sr-only">{{percentDone}}% Complete (success)</span>
         </div>
     </div>
-    <tr ng-controller="RowController"
-        ng-repeat="result in filteredResults | orderBy:'-relevance' | limitTo:25">
+    <tr ng-controller="RowController as row"
+        ng-repeat="result in state.results | orderBy:'-relevance' | limitTo:25">
         <td ng-click="result.selected = !result.selected">
             <i class="fa" ng-class="{'fa-bookmark': result.selected, 'fa-bookmark-o': !result.selected}"></i>
-            <strong>{{result.typeNames[0]}}</strong>
-            <div class="text-muted">{{result.typeNames.slice(1).join(', ')}}</div>
+            <strong>{{ row.getTypeName(result) }}</strong>
         </td>
         <td>{{result.mine.name}}</td>
         <td>
@@ -26,7 +30,9 @@
             </div>
             <table class="table table-bordered table-hover table-condensed">
                 <tr ng-repeat="(field, value) in result.fields" ng-show="result.selected">
-                    <td class="field-name"><em>{{fieldNames[field]}}</em></td>
+                    <td class="field-name">
+                      <em>{{row.getFieldName(field)}}</em>
+                    </td>
                     <td>{{value}}</td>
             </table>
         </td>

@@ -1,0 +1,32 @@
+{
+  "name": "multimine-search-tool",
+  "version": "0.0.1",
+  "description": "Free-term search across multiple intermine data-sources",
+  "main": "main.js",
+  "dependencies": {
+    "node-static": "^0.7.3"
+  },
+  "devDependencies": {
+    "bower": "^1.3.12",
+    "serve": "^1.4.0"
+  },
+  "scripts": {
+    "start": "serve",
+    "postinstall": "bower install --allow-root",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alexkalderimis/multimine-search-tool.git"
+  },
+  "keywords": [
+    "intermine",
+    "intermine-steps"
+  ],
+  "author": "Alex Kalderimis",
+  "license": "LGPL",
+  "bugs": {
+    "url": "https://github.com/alexkalderimis/multimine-search-tool/issues"
+  },
+  "homepage": "https://github.com/alexkalderimis/multimine-search-tool"
+}

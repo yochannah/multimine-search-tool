@@ -8,6 +8,9 @@ define(['angular', 'underscore', './controllers', './services'], function (angul
     'multimine-search-tool.services'
   ]);
 
+  // These could also be extracted if they get too big.
+
+  // Return an array of values, each of which has a $key property.
   App.filter('mappingToArray', function() { return function(obj) {
     if (!(obj instanceof Object)) return obj;
     return _.map(obj, function(val, key) {

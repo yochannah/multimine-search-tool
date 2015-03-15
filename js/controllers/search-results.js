@@ -2,7 +2,7 @@ define([
     'underscore',
     'imjs',
     './results-row'
-    ], function (_, intermine, RowController) {
+    ], function (_, intermine, resultsrow) {
 
 	'use strict';	
 	
@@ -15,15 +15,27 @@ define([
       genomic: 'Organism'
     }
   };
+  var connect = intermine.Service.connect;
+  // Cache for searches.
+  var _searches = {};
 
+  // Return an angularjs controller.
 	return ['$scope', '$q', '$timeout', '$filter', 'Mines', SearchResultsCtrl];
 	
+  /**
+   * @param {Scope} $scope An angularjs scope.
+   * @param {Q} $q A Q-like interface.
+   * @param {Function} $timeout A timeout function 
+   * @param {Mines} Mines A mines resource.
+   */
 	function SearchResultsCtrl ($scope, $q, $timeout, $filter, Mines) {
 
+    // Request all the configured datasources from the host, storing
+    // a promise for the response.
     var allMines = Mines.all().then(function (mines) {
       return mines.map(function (mine) {
-        var service = intermine.Service.connect(mine);
-        service.name = mine.name;
+        var service = connect(mine);
+        service.name = mine.name; // Record the configured mine name.
         return service;
       });
     });
@@ -31,45 +43,62 @@ define([
     // Define initial state.
     init();
 
-    $scope.RowController = RowController;
+    // Allow the template to refer to the correct controller.
+    $scope.RowController = resultsrow.controller;
 
-    // Make sure that the search reflects the search term, and that the filtered results
-    // reflect the facets.
+    // Make sure that the search reflects the search term, and the facets.
 		$scope.$watch('step.data.searchTerm', search);
-    $scope.$watch(_.compose(JSON.stringify, watchForCategories), inTimeout(function () {
-      $scope.categories = watchForCategories($scope);
-    }));
-    $scope.$watch('categories', filterResults);
-    $scope.$watch('results', filterResults);
-    $scope.$watch(watchFilteredResults, _.throttle(function () {
-      reportResults($scope.filteredResults);
-    }, 250));
+    //$scope.$watch(watchAppliedFacets, search);
 
     //--- Controller scoped functions.
 
     // (Re-)Initialise the state of the controller.
     function init () {
       $scope.complete = false;
-      $scope.categories = []; // Would be nice to avoid this.
       $scope.percentDone = 0;
-      if (!$scope.state) {
-        $scope.state = {};
-      }
-      $scope.state.facets = {Organism: {}, Type: {}};
-      $scope.results = []; // Holds our final results
-      $scope.filterResults = [];
-      $scope.selectedGenera = [];
-      $scope.selectedOrganisms = [];
+      $scope.failed = 0;
+      $scope.showFailed = true;
+      $scope.state = {
+        // Facets come in sets, eg: {Category: [{name: x, count: y, selected: false}]}
+        // they are aggregated from the facets returned from search results.
+        facets: {},
+        // the combined search results.
+        results: []
+      };
     }
 
-    var frn = 0;
+		function search () {
+      var searchterm = soakGet($scope, ['step', 'data', 'searchTerm']);
+      console.log("searching for ", searchterm);
+			if (searchterm == null) return; // empty string means "search for everything".
 
-    // Apply the filters (initially empty) to build the initial state. Needs $scope
-    function filterResults () {
-      $scope.filteredResults = applyFilters($scope.results, ($scope.categories || []));
-    }
+      // Start the search.
+      var searchingAll = allMines.then(searchFor(searchterm));
+      var done = 0;
+      init(); // Reinitialise.
 
-    var n = 0;
+			// process our returned data:
+      // Note, we are *not* using $q.all, since that will bail if
+      // any search fails, and we are ok if some of them do.
+      searchingAll.then(function (promises) {
+        // Supply progress notifications.
+        var n = promises.length;
+        var whenned = promises.map($q.when);
+        eachPromise(whenned, onProgress, _.compose(onProgress, onFailure));
+        eachPromise(whenned, processResultSet);
+
+        function onProgress (promise) {
+          done++;
+          $scope.percentDone = (done / n * 100).toFixed();
+          $scope.complete = (done === n);
+        }
+
+        function onFailure () {
+          $scope.failed++;
+        }
+      });
+		}
+
 
     // Report the values found.
     // emits a 'has' message for each set of items found at a mine.
@@ -111,38 +140,12 @@ define([
       });
     }
 
-		function search (searchterm) {
-			if (!searchterm) return;
-
-      // Start the search.
-      var searchingAll = allMines.then(searchAllFor(searchterm));
-      var done = 0;
-      init(); // Reinitialise.
-
-      // Supply progress notifications.
-      searchingAll.then(function (promises) {
-        var n = promises.length;
-        promises.forEach(function (promise) {
-          var fn = inTimeout(function () {
-            done++;
-            $scope.percentDone = (done / n * 100).toFixed();
-            $scope.complete = (done === n);
-          });
-          promise.then(fn, fn);
-        });
-      });
-          
-			// process our returned data:
-      searchingAll.then(function (promises) {
-        promises.forEach(function (promise) {
-          promise.then(processResultSet);
-        });
-      });
-					
-		}
-
     function processResultSet (resultSet) {
-      console.log(resultSet);
+      console.log('RECEIVED', resultSet.mine.name, resultSet.results.length);
+      var results = getResults(resultSet);
+      $scope.state.results = $scope.state.results.concat(results);
+
+      return;
 
       // Not all mines return organisms in the same format. While not fool proof,
       // it's likely to be result.fields['organism.name'] or result.fields['organism.shortName']/
@@ -198,6 +201,14 @@ define([
 
   }
 
+  // Apply the success and error functions to each result in a set
+  // of promises.
+  function eachPromise (promises, fn, err) {
+    _.each(promises, function (p) {
+      p.then(fn, err);
+    });
+  }
+
   /*
    * Return the result of passing the results through the tag filter and the organism filter.
    */
@@ -251,30 +262,44 @@ define([
 	/** Returns Promise<String> 
 	 * eg fetchDisplayName(service, "Gene.symbol") => Promise["Gene > Symbol"]
 	**/
+  var nameCache = {};
 	function fetchDisplayNames (service, className) {
-		return service.fetchModel().then(function (model) {
-      var types = [className].concat(model.getAncestorsOf(className));
-      return types.map(function (path) {
-        return model.makePath(path).getDisplayName();
+    if (nameCache[service.root]) {
+      return nameCache[service.root];
+    } else {
+      return nameCache[service.root] = service.fetchModel().then(function (model) {
+        var types = [className].concat(model.getAncestorsOf(className));
+        return types.map(function (path) {
+          return model.makePath(path).getDisplayName();
+        });
       });
-		});
+		}
 	}
-	
+
 	function quicksearch(needle) {
+    /** @param {imjs.Service} service The service to search **/
+
     return function (service) {
+      var size = 100;   // Return no more than 100 results.
+      var key = service.root + "|" + needle;
+      if (_searches[key]) {
+        return _searches[key]
+      } else {
+        return _searches[key] = service.post(
+          'search',
+          {q: needle, size: size}
+        ).then(function(result) {
+          // Attach the mine to the result for later filtering
+          result.mine = service;
 
-			return service.post('search', {q: needle, size: 100}).then(function(result) {
-
-				// Attach the mine to the result for later filtering
-				result.mine = service;
-
-				// Resolve our promise
-				return result;
-			});
+          // Resolve our promise
+          return result;
+        });
+			}
     };
 	}
 
-  function searchAllFor(searchterm) {
+  function searchFor(searchterm) {
     return function (mines) {
       return mines.map(quicksearch(searchterm));
     }
@@ -320,5 +345,33 @@ define([
       };
     }
   }
+
+  function watchAppliedFacets (scope) {
+    return _.flatten(_.values(scope.state.facets)).filter(isSelected).map(getName).join(':');
+
+    function isSelected (x) {
+      return x.selected;
+    }
+    function getName (x) {
+      return x.name;
+    }
+  }
+
+  function soakGet (obj, path) {
+    return _.reduce(path, function (o, p) {
+      return o ? o[p] : null;
+    }, obj);
+  }
+
+  // Return the results from each result set, parsed and munged as appropriate.
+  // we add the mine so it is accessible to the row controller.
+  function getResults (resultSet) {
+    return resultSet.results.map(function (r) {
+      r.mine = resultSet.mine;
+      return r;
+    });
+  }
+
+
 
 });

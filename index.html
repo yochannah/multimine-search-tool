@@ -30,11 +30,18 @@
 
         <div class="searchbox">
 
-          <form class="navbar-form halfwidth" role="search" ng-submit="step.data.searchTerm = searchterm">
+          <form class="navbar-form halfwidth"
+                role="search"
+                ng-submit="step.data.searchTerm = searchterm">
             <div class="input-group input-group-lg">
-              <input type="text"class="form-control" placeholder="long tail, lola*, Parkinson, MGI:96677" name="searchterm" id="searchterm" ng-model="searchterm">
+              <input type="text"class="form-control"
+                     placeholder="long tail, lola*, Parkinson, MGI:96677"
+                     name="searchterm" id="searchterm" ng-model="searchterm">
               <div class="input-group-btn">
-                <button snap-toggle ng-click="search(searchTerm)" class="btn btn-default" type="submit">Search </button>
+                <button snap-toggle
+                        ng-click="search(searchTerm)"
+                        class="btn btn-default"
+                        type="submit">Search </button>
               </div>
             </div>
           </form>
