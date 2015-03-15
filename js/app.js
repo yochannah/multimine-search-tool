@@ -8,6 +8,10 @@ define(['angular', 'underscore', 'pluralize', './controllers', './services'], fu
     'multimine-search-tool.services'
   ]);
 
+  App.config(['$locationProvider', function (locations) {
+    locations.html5Mode(true);
+  }]);
+
   // These could also be extracted if they get too big.
 
   // Return an array of values, each of which has a $key property.

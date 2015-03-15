@@ -9,9 +9,17 @@ define(['angular', 'underscore', './controllers/search-results'], function (angu
                            .controller('SearchInputCtrl',   SearchInputCtrl);
 
   // Currently does nothing.
-  function SearchInputCtrl (scope) {
+  function SearchInputCtrl (scope, location) {
+    scope.$watch('step.data.searchTerm', function (term) {
+      scope.searchterm = term;
+      this.data = (scope.step && scope.step.data);
+    });
+    this.location = location;
   }
-  SearchInputCtrl.$inject = ['$scope'];
+  SearchInputCtrl.$inject = ['$scope', '$location'];
+  SearchInputCtrl.prototype.searchFor = function (term) {
+    this.location.search('q', term);
+  };
 
   function FacetCtrl () {
   }
@@ -20,7 +28,7 @@ define(['angular', 'underscore', './controllers/search-results'], function (angu
   };
 
   // The demo controller.
-  function DemoCtrl (scope, timeout, queryParams) {
+  function DemoCtrl (scope, timeout, location, queryParams) {
 
     console.log(queryParams);
     scope.step     = {data: {searchTerm: (queryParams.q || 'lola')}};
@@ -36,6 +44,11 @@ define(['angular', 'underscore', './controllers/search-results'], function (angu
       scope.sumAvailable = sum;
     });
 
+    scope.$on('$locationChangeSuccess', function () {
+      scope.step.data.searchTerm = location.search()['q'];
+      scope.$apply();
+    });
+
     scope.$on('has', function (event, message) {
       // this horror is one of the best arguments for using react.
       scope.messages[message.what][message.key] = message.data;
@@ -45,6 +58,6 @@ define(['angular', 'underscore', './controllers/search-results'], function (angu
     });
 
   }
-  DemoCtrl.$inject = ['$scope', '$timeout', 'queryParams'];
+  DemoCtrl.$inject = ['$scope', '$timeout', '$location', 'queryParams'];
 
 });
