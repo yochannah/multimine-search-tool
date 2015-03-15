@@ -53,10 +53,10 @@ define([
     $scope.$on('select.toggle.search-result', reportResults);
 
 		$scope.$watch('step.data.searchTerm', function (term) {
-      $scope.termParts = term ? term.split(' ').map(stripStars) : [];
+      $scope.termParts = term ? term.split(' ').map(normalise) : [];
 
-      function stripStars (p) {
-        return p.replace(/\*/g, '');
+      function normalise (p) {
+        return p.replace(/\*/g, '').toLowerCase();
       }
     });
 
