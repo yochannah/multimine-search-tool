@@ -1,15 +1,15 @@
 // main.js
 (function () {
   require.config({
-    baseUrl: 'js',
+    baseUrl: './js',
     paths: {
-      underscore: '/bower_components/underscore/underscore',
-      angular: '/bower_components/angular/angular', 
-      imjs: '/bower_components/imjs/js/im',
-      "angular-route": '/bower_components/angular-route/angular-route',
-      "angular-ui": '/bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls',
-      domReady: '/bower_components/requirejs-domready/domReady',
-      pluralize: '/bower_components/pluralize/pluralize'
+      underscore: '../bower_components/underscore/underscore',
+      angular: '../bower_components/angular/angular', 
+      imjs: '../bower_components/imjs/js/im',
+      "angular-route": '../bower_components/angular-route/angular-route',
+      "angular-ui": '../bower_components/angular-ui-bootstrap-bower/ui-bootstrap-tpls',
+      domReady: '../bower_components/requirejs-domready/domReady',
+      pluralize: '../bower_components/pluralize/pluralize'
     },
     shim: {
       'angular': {
