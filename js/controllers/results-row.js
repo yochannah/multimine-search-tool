@@ -23,6 +23,7 @@ define(function (require, exports, module) {
 
     // Fetch summary values when needed.
     scope.$watch('result.selected', function (isSelected) {
+      scope.$emit('select.toggle.search-result', scope.result);
       if (!scope.result || isSelected || scope.result.summaryValues) return;
 
       scope.result.summaryValues = []; // Prevent double fetch.

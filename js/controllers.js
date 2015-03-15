@@ -5,6 +5,8 @@ define(['angular', 'underscore', './controllers/search-results'], function (angu
 	var Controllers = angular.module('multimine-search-tool.controllers', [])
                            .controller('DemoCtrl',          DemoCtrl)
                            .controller('FacetCtrl',         FacetCtrl)
+                           .controller('HeadingCtrl',       HeadingCtrl)
+                           .controller('MessagesCtrl',      MessagesCtrl)
                            .controller('SearchResultsCtrl', SearchResultsCtrl)
                            .controller('SearchInputCtrl',   SearchInputCtrl);
 
@@ -21,11 +23,28 @@ define(['angular', 'underscore', './controllers/search-results'], function (angu
     this.location.search('q', term);
   };
 
+  function HeadingCtrl (scope) {
+    var self = this;
+    scope.$watch('state.results', function (results) {
+      self.results = results;
+    });
+  }
+  HeadingCtrl.prototype.selectAll = function () {
+    this.results.forEach(function (r) {
+      r.selected = true;
+    });
+  };
+  HeadingCtrl.$inject = ['$scope'];
+
   function FacetCtrl () {
   }
   FacetCtrl.prototype.facetCount = function (facetGroup) {
     return Object.keys(facetGroup).length;
   };
+
+  function MessagesCtrl () {
+    this.collapsed = true;
+  }
 
   // The demo controller.
   function DemoCtrl (scope, timeout, location, queryParams) {
@@ -33,8 +52,9 @@ define(['angular', 'underscore', './controllers/search-results'], function (angu
     console.log(queryParams);
     scope.step     = {data: {searchTerm: (queryParams.q || 'lola')}};
     scope.messages = {ids: {}};
+    scope.wantedMsgs = {ids: {}};
 
-    scope.sumAvailable = 0;
+    scope.sumAvailable = scope.sumSelected = 0;
     
     scope.$watch('messages', function () {
       var sum = 0;
@@ -46,14 +66,21 @@ define(['angular', 'underscore', './controllers/search-results'], function (angu
 
     scope.$on('$locationChangeSuccess', function () {
       scope.step.data.searchTerm = location.search()['q'];
-      scope.$apply();
     });
 
     scope.$on('has', function (event, message) {
       // this horror is one of the best arguments for using react.
       scope.messages[message.what][message.key] = message.data;
-      timeout(function () {
+      timeout(function () { // need a new reference to trigger update.
         scope.messages = _.extend({}, scope.messages); 
+      });
+    });
+
+    scope.$on('wants', function (event, message) {
+      // this horror is one of the best arguments for using react.
+      scope.wantedMsgs[message.what][message.key] = message.data;
+      timeout(function () { // need a new reference to trigger update.
+        scope.wantedMsgs = _.extend({}, scope.wantedMsgs); 
       });
     });
 

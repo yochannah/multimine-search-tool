@@ -30,7 +30,8 @@ define([
 	function SearchResultsCtrl ($scope, $q, Mines) {
 
     // Request all the configured datasources from the host, storing
-    // a promise for the response.
+    // a promise for the response. This is requested once and reused
+    // in any place that needs access to the list of sources.
     var allMines = Mines.all().then(function (mines) {
       return mines.map(function (mine) {
         var service = connect(mine);
@@ -48,6 +49,8 @@ define([
 
     // Trigger a search when we should.
 		$scope.$watch(searchWatch, search);
+    $scope.$watch('state.results', reportResults);
+    $scope.$on('select.toggle.search-result', reportResults);
 
 		$scope.$watch('step.data.searchTerm', function (term) {
       $scope.termParts = term ? term.split(' ').map(stripStars) : [];
@@ -120,29 +123,30 @@ define([
 
     // Report the values found.
     // emits a 'has' message for each set of items found at a mine.
-    function reportResults (filteredResults) {
-      var allTypes = _.pluck($scope.results, 'type')
-        , byMine   = _.chain(filteredResults)
+    function reportResults () {
+      var results  = soakGet($scope, ['state', 'results']) || [];
+      var allTypes = _.uniq(_.pluck(results, 'type'));
+      var byMine   = _.chain(results)
                       .where({selected: true})
                       .groupBy(by('mine.root'))
                       .value();
       allMines.then(function (mines) {
         mines.forEach(function (mine) {
-          mine.fetchModel().then(function (model) {
-            var results, byType, ids, types, commonType, type;
-            results = (byMine[mine.root] || []);
-
-            byType = _.groupBy(results, by('type'));
-            allTypes
-             .filter(function (type) { return !byType[type]; })
-             .forEach(function (type) { byType[type] = []; });
-            ids = _.pluck(results, 'id');
-            types = _.uniq(_.pluck(results, 'type'));
-            for (type in byType) {
-              hasItems(mine, byType[type].map(by('id')), type);
+          var results = (byMine[mine.root] || []);
+          var byType = _.groupBy(results, by('type'));
+          allTypes.forEach(function (t) {
+            if (!byType[t]) {
+              byType[t] = [];
             }
-          }).then(null, console.error.bind(console));
+          });
+          var types = _.uniq(_.pluck(results, 'type'));
+
+          _.each(byType, function (items, type) {
+            hasItems(mine, items.map(by('id')), type);
+          });
         });
+      }).catch(function (err) {
+        console.error(err);
       });
     }
 
@@ -419,6 +423,10 @@ define([
       ret[f.facet][f.name] = f;
     });
     return ret;
+  }
+
+  function countSelectedResults (scope) {
+    _.where(soakGet(scope, ['state', 'results']) || [], {selected: true}).length;
   }
 
 });
