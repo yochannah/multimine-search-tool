@@ -18,14 +18,22 @@
         <td ng-click="result.selected = !result.selected">
             <i class="fa" ng-class="{'fa-bookmark': result.selected, 'fa-bookmark-o': !result.selected}"></i>
             <strong>{{ row.getTypeName(result) }}</strong>
+            <div><small class="text-muted">{{ result.relevance }}</small></div>
         </td>
-        <td>{{result.mine.name}}</td>
+        <td>
+            {{result.mine.name}}
+        </td>
         <td>
             <div class="summary-fields" ng-hide="result.selected">
                 <span class="summary-value"
                       ng-if="summaryValue.value != null"
                       ng-repeat="summaryValue in result.summaryValues">
-                    {{summaryValue.value | limitTo:50}}
+                    <mark ng-if="termMatched(summaryValue.value)">
+                        {{summaryValue.value | limitTo:50}}
+                    </mark>
+                    <span ng-if="!termMatched(summaryValue.value)">
+                        {{summaryValue.value | limitTo:50}}
+                    </span>
                 </span>
             </div>
             <table class="table table-bordered table-hover table-condensed">

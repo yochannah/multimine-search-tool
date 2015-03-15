@@ -20,15 +20,14 @@ define([
   var _searches = {};
 
   // Return an angularjs controller.
-	return ['$scope', '$q', '$timeout', '$filter', 'Mines', SearchResultsCtrl];
+	return ['$scope', '$q', 'Mines', SearchResultsCtrl];
 	
   /**
    * @param {Scope} $scope An angularjs scope.
    * @param {Q} $q A Q-like interface.
-   * @param {Function} $timeout A timeout function 
    * @param {Mines} Mines A mines resource.
    */
-	function SearchResultsCtrl ($scope, $q, $timeout, $filter, Mines) {
+	function SearchResultsCtrl ($scope, $q, Mines) {
 
     // Request all the configured datasources from the host, storing
     // a promise for the response.
@@ -44,11 +43,27 @@ define([
     init();
 
     // Allow the template to refer to the correct controller.
+    console.log(resultsrow.controller);
     $scope.RowController = resultsrow.controller;
 
-    // Make sure that the search reflects the search term, and the facets.
-		$scope.$watch('step.data.searchTerm', search);
-    //$scope.$watch(watchAppliedFacets, search);
+    // Trigger a search when we should.
+		$scope.$watch(searchWatch, search);
+
+		$scope.$watch('step.data.searchTerm', function (term) {
+      $scope.termParts = term ? term.split(' ').map(stripStars) : [];
+
+      function stripStars (p) {
+        return p.replace(/\*/g, '');
+      }
+    });
+
+    // Used for highlighting matched terms.
+    $scope.termMatched = function (term) {
+      if (!term || !$scope.termParts) return false;
+      return _.any($scope.termParts, function (p) {
+        return String(term).toLowerCase().indexOf(p) >= 0;
+      });
+    };
 
     //--- Controller scoped functions.
 
@@ -69,11 +84,14 @@ define([
 
 		function search () {
       var searchterm = soakGet($scope, ['step', 'data', 'searchTerm']);
-      console.log("searching for ", searchterm);
-			if (searchterm == null) return; // empty string means "search for everything".
+      var facets = $scope.appliedFacets = getAppliedFacets($scope);
+      console.log("searching for ", searchterm, facets);
+      // empty string means "search for everything", but null
+      // means not initialised yet.
+			if (searchterm == null) return;
 
       // Start the search.
-      var searchingAll = allMines.then(searchFor(searchterm));
+      var searchingAll = allMines.then(searchFor(searchterm, facets));
       var done = 0;
       init(); // Reinitialise.
 
@@ -141,62 +159,15 @@ define([
     }
 
     function processResultSet (resultSet) {
-      console.log('RECEIVED', resultSet.mine.name, resultSet.results.length);
+      // console.log('RECEIVED', resultSet.mine.name, resultSet.results.length);
       var results = getResults(resultSet);
+      var facets = getFacets(resultSet);
+
       $scope.state.results = $scope.state.results.concat(results);
+      $scope.state.facets = mergeFacets($scope.appliedFacets, $scope.state.facets, facets);
 
       return;
 
-      // Not all mines return organisms in the same format. While not fool proof,
-      // it's likely to be result.fields['organism.name'] or result.fields['organism.shortName']/
-      // We need to standardize in order for filtering to work!
-
-      // Calculate the number of results returned per category:
-      resultSet.results.forEach(inTimeout(function (result, i) {
-
-        // Attach the mine information to each result for filtering:
-        result.mine = resultSet.mine;
-        result.selected = true; // Selected by default.
-
-        // Use concat to trigger dirty check.
-        $scope.results = $scope.results.concat([result]);
-
-        // Update type facets.
-        fetchDisplayNames(result.mine, result.type).then($q.all).then(function (names) {
-          result.typeNames = names;
-          names.forEach(inTimeout(addFacet.bind(null, $scope.state.facets.Type, 'type')));
-        });
-
-        // Update category facets (usually means organism).
-        result.mine.fetchModel().then(function (model) {
-          var prop = _.find(config.categories[model.name] || [], function (p) { return result.fields[p]; })
-            , defaultProp = config.defaultCategory[model.name]
-            , facetName = config.categoryName[model.name]
-            , facetGroup = $scope.state.facets[facetName];
-          if (!prop) return;
-          if (defaultProp === prop) { // If supplied use it.
-              $timeout(addFacet.bind(null, facetGroup, facetName, result.fields[prop]));
-          } else { // if not, query for it and use that.
-            result.mine
-                  .rows({select: defaultProp, from: result.type, where: {id: result.id}})
-                  .then(inTimeout(function (rows) {
-                    if (rows[0]) {
-                      var value = rows[0][0];
-                      result.fields[defaultProp] = value;
-                      addFacet(facetGroup, facetName, value);
-                    }
-                  }));
-          }
-        });
-      }));
-
-    }
-
-    // Helper for de-nesting blocks by wrapping a block in a timeout.
-    // Needs $timeout so must be declared within controller injection scope.
-    // _could_ be made into a service, but that would be overkill.
-    function inTimeout (f) {
-      return function (x) { $timeout(function () { f(x); }); };
     }
 
   }
@@ -276,18 +247,21 @@ define([
 		}
 	}
 
-	function quicksearch(needle) {
+	function quicksearch(needle, facets) {
     /** @param {imjs.Service} service The service to search **/
 
     return function (service) {
       var size = 100;   // Return no more than 100 results.
-      var key = service.root + "|" + needle;
+      var key = service.root + "|" + needle + '|' + facetsToKey(facets);
       if (_searches[key]) {
         return _searches[key]
       } else {
+        var params = facetsToParams(facets);
+        params.q = needle;
+        params.size = size;
         return _searches[key] = service.post(
           'search',
-          {q: needle, size: size}
+          params
         ).then(function(result) {
           // Attach the mine to the result for later filtering
           result.mine = service;
@@ -297,11 +271,24 @@ define([
         });
 			}
     };
+
 	}
 
-  function searchFor(searchterm) {
+  function facetsToKey (facets) {
+    return facets.map(function (f) { return f.facet + '=' + f.name; }).join(';');
+  }
+
+  function facetsToParams (facets) {
+    var ret = {};
+    facets.forEach(function (f) {
+      ret['facet_' + f.facet] = f.name;
+    });
+    return ret;
+  }
+
+  function searchFor(searchterm, facets) {
     return function (mines) {
-      return mines.map(quicksearch(searchterm));
+      return mines.map(quicksearch(searchterm, facets));
     }
   };
 
@@ -346,15 +333,28 @@ define([
     }
   }
 
-  function watchAppliedFacets (scope) {
-    return _.flatten(_.values(scope.state.facets)).filter(isSelected).map(getName).join(':');
+  function getAppliedFacets (scope) {
+    var facets = soakGet(scope, ['state', 'facets']);
+    if (!facets) return [];
+    var facetValues = _.flatten(_.values(facets).map(_.values));
+    return _.uniq((scope.appliedFacets || []).concat(facetValues).filter(isSelected), false, facetKey);
 
     function isSelected (x) {
       return x.selected;
     }
-    function getName (x) {
-      return x.name;
-    }
+  }
+
+  function watchAppliedFacets (scope) {
+    return _.uniq(getAppliedFacets(scope).map(facetKey)).join(':');
+  }
+
+  function facetKey (f) {
+    return f.facet + '=' + f.name;
+  }
+
+  function searchWatch (scope) {
+    return soakGet(scope, ['step', 'data', 'searchTerm'])
+          + watchAppliedFacets(scope);
   }
 
   function soakGet (obj, path) {
@@ -372,6 +372,53 @@ define([
     });
   }
 
+  function getFacets (resultSet) {
+    return resultSet.facets || {};
+  }
 
+  // Produces a structure of the shape:
+  // {
+  //   setA: {
+  //     facetA: {count: number},
+  //     facetB: {count: number}
+  //   setB: {
+  //     facetX: {count: number}
+  //  }
+  // }
+  function mergeFacets (appliedFacets, setA, setB) {
+    var ret = {};
+    var akeys = Object.keys(setA);
+    var bkeys = Object.keys(setB);
+    var allkeys = _.union(akeys, bkeys);
+    var indexedCurrent = indexCurrent(appliedFacets);
+    allkeys.forEach(function (k) {
+      var agroup = (setA[k] || {});
+      var bgroup = (setB[k] || {});
+      var mergedGroup = {};
+      var allfacets = _.union(_.keys(agroup), _.keys(bgroup));
+      allfacets.forEach(function (f) {
+        var current = (indexedCurrent[k] && indexedCurrent[k][f]);
+        mergedGroup[f] = (agroup[f] || {facet: k, name: f, count: 0});
+        mergedGroup[f].count += (bgroup[f] || 0);
+        if (current) {
+          current.count = mergedGroup[f].count;
+          mergedGroup[f] = current; // This assignment means we can de-select it later.
+        }
+      });
+      if (Object.keys(mergedGroup).length) {
+        ret[k] = mergedGroup;
+      }
+    });
+    return ret;
+  }
+
+  function indexCurrent (facets) {
+    var ret = {};
+    facets.forEach(function (f) {
+      ret[f.facet] = {};
+      ret[f.facet][f.name] = f;
+    });
+    return ret;
+  }
 
 });

@@ -1,4 +1,4 @@
-define(function (require, module, exports) {
+define(function (require, exports, module) {
 
   'use strict';
 
@@ -16,6 +16,9 @@ define(function (require, module, exports) {
     // Make sure mine is available to self.
     scope.$watch('result.mine', function (mine) {
       self.mine = mine;
+    });
+    scope.$watch('result.type', function (type) {
+      self.type = type;
     });
 
     // Fetch summary values when needed.
@@ -81,32 +84,38 @@ define(function (require, module, exports) {
       var mine = scope.result.mine;
 
       Object.keys(scope.result.fields).forEach(function (field) {
-        var key = 'FN:' + mine.root + ':' + field;
-        Q.when(promiseUniquely(key, fetchFieldName(field)))
-          .then(function (name) {
-            self.setFieldName(field, name.replace(/^[^>]* >/, ''));
+        var path = scope.result.type + '.' + field;
+        var key = 'FN:' + mine.root + ':' + path;
+        Q.when(promiseUniquely(key, fetchFieldName(path))).then(function (name) {
+          self.setFieldName(path, name);
+        }).catch(function (err) {
+          console.error(err);
         });
       });
 
-      function fetchFieldName (field) {
+      function fetchFieldName (path) {
         return function () {
-          return fetchDisplayName(model, scope.result.type + '.' + field);
+          return fetchDisplayName(mine, path).then(function (name) {
+            return name.replace(/^[^>]* >/, '');
+          });
         };
       }
+
     });
   }
 
   RowController.prototype.getFieldName = function getFieldName (field) {
-    if (!this.mine || !field) return null;
-    return fieldNames[this.mine.root] && fieldNames[this.mine.root][field];
+    if (!this.mine || !this.type || !field) return null;
+    var path = this.type + '.' + field;
+    return fieldNames[this.mine.root] && fieldNames[this.mine.root][path];
   };
 
-  RowController.prototype.setFieldName = function setFieldName (field, name) {
+  RowController.prototype.setFieldName = function setFieldName (path, name) {
     if (!this.mine) return null;
     if (!fieldNames[this.mine.root]) {
       fieldNames[this.mine.root] = {};
     }
-    return fieldNames[this.mine.root][field] = name;
+    return fieldNames[this.mine.root][path] = name;
   };
 
   RowController.prototype.setTypeName = function setTypeName (result, name) {
@@ -129,7 +138,11 @@ define(function (require, module, exports) {
   var promises = {};
   function promiseUniquely (key, action) {
     if (!promises[key]) {
-      promises[key] = action();
+      try {
+        promises[key] = action();
+      } catch (e) {
+        console.error(e);
+      }
     } 
     return promises[key];
   }

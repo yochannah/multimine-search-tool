@@ -192,7 +192,7 @@ snap-content {
     background-repeat: repeat;
 }
 
-
-
-
+[ng-click] {
+    cursor: pointer;
+}
 

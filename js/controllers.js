@@ -4,6 +4,7 @@ define(['angular', 'underscore', './controllers/search-results'], function (angu
 
 	var Controllers = angular.module('multimine-search-tool.controllers', [])
                            .controller('DemoCtrl',          DemoCtrl)
+                           .controller('FacetCtrl',         FacetCtrl)
                            .controller('SearchResultsCtrl', SearchResultsCtrl)
                            .controller('SearchInputCtrl',   SearchInputCtrl);
 
@@ -11,6 +12,12 @@ define(['angular', 'underscore', './controllers/search-results'], function (angu
   function SearchInputCtrl (scope) {
   }
   SearchInputCtrl.$inject = ['$scope'];
+
+  function FacetCtrl () {
+  }
+  FacetCtrl.prototype.facetCount = function (facetGroup) {
+    return Object.keys(facetGroup).length;
+  };
 
   // The demo controller.
   function DemoCtrl (scope, timeout, queryParams) {

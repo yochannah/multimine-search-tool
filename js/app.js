@@ -1,5 +1,5 @@
 /** Load sub modules, and get a reference to angular **/
-define(['angular', 'underscore', './controllers', './services'], function (angular, _) {
+define(['angular', 'underscore', 'pluralize', './controllers', './services'], function (angular, _, pluralize) {
 
 	'use strict';
 	
@@ -16,6 +16,10 @@ define(['angular', 'underscore', './controllers', './services'], function (angul
     return _.map(obj, function(val, key) {
       return Object.defineProperty(val, '$key', {__proto__: null, value: key});
     });
+  }});
+
+  App.filter('pluralize', function () { return function (thing, n) {
+    return pluralize(thing, n, true);
   }});
 
   App.directive('blurOnClick', function () {
