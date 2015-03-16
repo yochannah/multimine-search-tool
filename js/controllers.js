@@ -70,17 +70,13 @@ define(['angular', 'underscore', './controllers/search-results'], function (angu
 
     scope.$on('has', function (event, message) {
       // this horror is one of the best arguments for using react.
-      scope.messages[message.what][message.key] = message.data;
+      if (message.data) {
+        scope.messages[message.what][message.key] = message.data;
+      } else {
+        delete scope.messages[message.what][message.key];
+      }
       timeout(function () { // need a new reference to trigger update.
         scope.messages = _.extend({}, scope.messages); 
-      });
-    });
-
-    scope.$on('wants', function (event, message) {
-      // this horror is one of the best arguments for using react.
-      scope.wantedMsgs[message.what][message.key] = message.data;
-      timeout(function () { // need a new reference to trigger update.
-        scope.wantedMsgs = _.extend({}, scope.wantedMsgs); 
       });
     });
 

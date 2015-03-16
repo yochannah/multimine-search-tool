@@ -151,14 +151,15 @@ define([
     }
 
     // Emit a message about the availability of sets of items.
-    function hasItems(mine, ids, type) {
+    function hasItems (mine, ids, type) {
+      var data = (!ids || !ids.length) ? null : {
+        service: {root: mine.root, name: mine.name},
+        request: {ids: ids, type: type}
+      };
       $scope.$emit('has', {
         what: 'ids',
         key: mine.root + type,
-        data: {
-          service: {root: mine.root, name: mine.name},
-          request: {ids: ids, type: type}
-        }
+        data: data
       });
     }
 
