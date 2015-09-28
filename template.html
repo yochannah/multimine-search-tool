@@ -19,7 +19,7 @@
         <td ng-click="result.selected = !result.selected">
             <i class="fa" ng-class="{'fa-bookmark': result.selected, 'fa-bookmark-o': !result.selected}"></i>
             <strong>{{ row.getTypeName(result) }}</strong>
-            <div><small class="text-muted">{{ result.relevance }}</small></div>
+            <div><small class="text-muted" alt="relevance">{{ result.relevance }}</small></div>
         </td>
         <td class="mineName">
             {{result.mine.name}}

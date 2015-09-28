@@ -12,7 +12,5 @@
 }
 
 .summary-fields .summary-value.matched {
-    background: #428bca;
-    color: white;
-    border-color: white;
+    border-bottom: solid 2px #428bca;
 }
