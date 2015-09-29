@@ -13,6 +13,15 @@
             <span class="sr-only">{{percentDone}}% Complete (success)</span>
         </div>
     </div>
+    <thead>
+      <tr>
+        <th>Result type
+          <div><small class="text-muted" alt="relevance">Relevance&nbsp;score</small></div>
+        </th>
+        <th>Source</th>
+        <th>Result summary</th>
+      </tr>
+    </thead>
     <tr ng-controller="RowController as row"
         ng-repeat="result in state.results | orderBy:'-relevance' | limitTo:25">
         <!-- TODO: separate selection and collapse -->
