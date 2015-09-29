@@ -5,21 +5,22 @@
           <div><small class="text-muted" alt="relevance">Relevance&nbsp;score</small></div>
         </th>
         <th>Source</th>
+        <th>Name</th>
         <th>Result summary</th>
       </tr>
       <tr>
-          <td colspan="3" ng-hide="state.results.length || !complete">
+          <td colspan="4" ng-hide="state.results.length || !complete">
             <div class="alert alert-info">
               <strong>Sorry</strong> no results matched your search terms.
             </div>
           </td>
-          <td colspan="3" ng-show="showFailed && failed > 0">
+          <td colspan="4" ng-show="showFailed && failed > 0">
             <div class="alert alert-warning">
               <span ng-click="showFailed = false" class="close">dismiss</span>
               We did not receive a response from {{ failed }} sources.
             </div>
           </td>
-          <td colspan="3" ng-hide="complete || !step.data.searchTerm">
+          <td colspan="4" ng-hide="complete || !step.data.searchTerm">
             <div class="progress progress-striped">
               <div class="progress-bar progress-bar-success"
                    role="progressbar" aria-valuenow="{{percentDone}}" aria-valuemin="0" aria-valuemax="100" style="width: {{percentDone}}%">
@@ -40,6 +41,9 @@
         <td class="mineName">
             {{result.mine.name}}
         </td>
+        <td class="organism">
+          {{result.fields["organism.name"] || result.fields["organism.shortName"]}} 
+        </td>
         <td>
             <div class="summary-fields" ng-hide="result.selected">
                 <span class="summary-value"
@@ -52,7 +56,7 @@
             <table class="table table-bordered table-hover table-condensed" ng-show="result.selected">
                 <tr ng-repeat="(field, value) in result.fields">
                     <td class="field-name">
-                      <em>{{row.getFieldName(field)}}</em>
+                      <em>{{row.getFieldName(field)}}, {{field}}</em>
                     </td>
                     <td ng-class="{active: termMatched(value)}">{{value}}</td>
             </table>

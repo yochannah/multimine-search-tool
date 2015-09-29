@@ -4,9 +4,9 @@
 
 .summary-fields .summary-value {
     margin-right: 0.5em;
-    margin-bottom: 0.4em;
+    margin-bottom: 0.1em;
     display: inline-block;
-    padding: 0.25em;
+    padding: 0.15em;
   }
 
 .summary-fields .summary-value:after {
