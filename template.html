@@ -1,18 +1,4 @@
 <table class="table keyword-search-results">
-    <div class="alert alert-info" ng-hide="state.results.length || !complete">
-        <strong>Sorry</strong> no results matched your search terms.
-    </div>
-    <div class="alert alert-warning"
-         ng-show="showFailed && failed > 0">
-        <span ng-click="showFailed = false" class="close">dismiss</span>
-        We did not receive a response from {{ failed }} sources.
-    </div>
-    <div class="progress progress-striped" ng-hide="complete || !step.data.searchTerm">
-        <div class="progress-bar progress-bar-success"
-             role="progressbar" aria-valuenow="{{percentDone}}" aria-valuemin="0" aria-valuemax="100" style="width: {{percentDone}}%">
-            <span class="sr-only">{{percentDone}}% Complete (success)</span>
-        </div>
-    </div>
     <thead>
       <tr>
         <th>Result type
@@ -20,6 +6,27 @@
         </th>
         <th>Source</th>
         <th>Result summary</th>
+      </tr>
+      <tr>
+          <td colspan="3" ng-hide="state.results.length || !complete">
+            <div class="alert alert-info">
+              <strong>Sorry</strong> no results matched your search terms.
+            </div>
+          </td>
+          <td colspan="3" ng-show="showFailed && failed > 0">
+            <div class="alert alert-warning">
+              <span ng-click="showFailed = false" class="close">dismiss</span>
+              We did not receive a response from {{ failed }} sources.
+            </div>
+          </td>
+          <td colspan="3" ng-hide="complete || !step.data.searchTerm">
+            <div class="progress progress-striped">
+              <div class="progress-bar progress-bar-success"
+                   role="progressbar" aria-valuenow="{{percentDone}}" aria-valuemin="0" aria-valuemax="100" style="width: {{percentDone}}%">
+                  <span class="sr-only">{{percentDone}}% Complete (success)</span>
+              </div>
+            </div>
+          </td>
       </tr>
     </thead>
     <tr ng-controller="RowController as row"
@@ -42,8 +49,8 @@
                     {{summaryValue.value | limitTo:50}}
                 </span>
             </div>
-            <table class="table table-bordered table-hover table-condensed">
-                <tr ng-repeat="(field, value) in result.fields" ng-show="result.selected">
+            <table class="table table-bordered table-hover table-condensed" ng-show="result.selected">
+                <tr ng-repeat="(field, value) in result.fields">
                     <td class="field-name">
                       <em>{{row.getFieldName(field)}}</em>
                     </td>
