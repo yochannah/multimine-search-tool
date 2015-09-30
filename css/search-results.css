@@ -25,6 +25,10 @@ content: "";
 
 .keyword-search-results.table>thead>tr>th {vertical-align:top;}
 
-.keyword-search-results .mineName {
+.keyword-search-results .mineName,.keyword-search-results .resultName,  {
   min-width:8em;
+}
+
+.keyword-search-results .resultSummary,  {
+  min-width:50%;
 }

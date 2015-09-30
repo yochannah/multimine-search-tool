@@ -136,7 +136,6 @@ define(function (require, exports, module) {
     var type = this.getTypeName(result),
     name = this.getObjectName(result),
     summary = summaryValue.value;
-    if(name) console.log(name);
     return isDuplicate(type,summary) && isDuplicate(name,summary);
   }
 

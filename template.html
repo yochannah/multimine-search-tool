@@ -44,10 +44,10 @@
         <td class="resultName">
           {{row.getObjectName(result)}}
         </td>
-        <td>
+        <td class="resultSummary">
             <div class="summary-fields" ng-hide="result.selected">
-                <span class="summary-value"
-                      ng-if="(summaryValue.value != null) && (row.dontShowThingsTwice(result, summaryValue))"
+                <span bind-once class="summary-value"
+                      ng-if="(summaryValue.value != null)"
                       ng-class="{matched: termMatched(summaryValue.value)}"
                       ng-repeat="summaryValue in result.summaryValues">
                     {{summaryValue.value | limitTo:50 }}
