@@ -31,9 +31,9 @@
       </tr>
     </thead>
     <tr ng-controller="RowController as row"
-        ng-repeat="result in state.results | orderBy:'-relevance' | limitTo:25">
+        ng-repeat="result in state.results | orderBy:'-relevance' | limitTo:25" ng-click="result.selected = !result.selected">
         <!-- TODO: separate selection and collapse -->
-        <td ng-click="result.selected = !result.selected">
+        <td>
             <i class="fa" ng-class="{'fa-bookmark': result.selected, 'fa-bookmark-o': !result.selected}"></i>
             <strong>{{ row.getTypeName(result) }}</strong>
             <div><small class="text-muted" alt="relevance">{{ result.relevance }}</small></div>
@@ -41,22 +41,22 @@
         <td class="mineName">
             {{result.mine.name}}
         </td>
-        <td class="organism">
-          {{result.fields["organism.name"] || result.fields["organism.shortName"]}} 
+        <td class="resultName">
+          {{row.getObjectName(result)}}
         </td>
         <td>
             <div class="summary-fields" ng-hide="result.selected">
                 <span class="summary-value"
-                      ng-if="summaryValue.value != null"
+                      ng-if="(summaryValue.value != null) && (row.dontShowTypeTwice(row.getTypeName(result), summaryValue))"
                       ng-class="{matched: termMatched(summaryValue.value)}"
                       ng-repeat="summaryValue in result.summaryValues">
-                    {{summaryValue.value | limitTo:50}}
+                    {{summaryValue.value | limitTo:50 }}
                 </span>
             </div>
             <table class="table table-bordered table-hover table-condensed" ng-show="result.selected">
                 <tr ng-repeat="(field, value) in result.fields">
                     <td class="field-name">
-                      <em>{{row.getFieldName(field)}}, {{field}}</em>
+                      <em>{{row.getFieldName(field)}}</em>
                     </td>
                     <td ng-class="{active: termMatched(value)}">{{value}}</td>
             </table>
