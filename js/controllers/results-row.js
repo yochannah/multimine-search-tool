@@ -132,13 +132,21 @@ define(function (require, exports, module) {
     return typeNames[this.mine.root] && typeNames[this.mine.root][result.type];
   }
 
-  RowController.prototype.dontShowTypeTwice = function(type, summary){
-    if(summary.value && type && ('string' === typeof summary.value)) {
-      //debugger;
-      return type.toLowerCase() !== summary.value.toLowerCase();
-    } else {
-      return false;
-    }
+  RowController.prototype.dontShowThingsTwice = function(result, summaryValue){
+    var type = this.getTypeName(result),
+    name = this.getObjectName(result),
+    summary = summaryValue.value;
+    if(name) console.log(name);
+    return isDuplicate(type,summary) && isDuplicate(name,summary);
+  }
+
+  /*Helper function for dontshowthingstwice*/
+  function isDuplicate(term, summary){
+      if(summary && term && ('string' === typeof summary)) {
+        return term.toLowerCase() !== summary.toLowerCase();
+      } else {
+        return false;
+      }
   }
 
   RowController.prototype.getObjectName = function(obj){
