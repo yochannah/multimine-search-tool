@@ -3,16 +3,32 @@
 }
 
 .summary-fields .summary-value {
-    border: 1px solid #ddd;
     margin-right: 0.5em;
-    margin-bottom: 0.4em;
+    margin-bottom: 0.1em;
     display: inline-block;
-    padding: 0.25em;
-    background: #f5f5f5;
+    padding: 0.15em;
+  }
+
+.summary-fields .summary-value:after {
+content: ",";
+}
+
+.summary-fields .summary-value:last-child:after {
+content: "";
 }
 
 .summary-fields .summary-value.matched {
-    background: #428bca;
-    color: white;
-    border-color: white;
+    background:rgba(66, 139, 202, 0.15);
+}
+
+.keyword-search-results thead small { font-weight: normal}
+
+.keyword-search-results.table>thead>tr>th {vertical-align:top;}
+
+.keyword-search-results .mineName,.keyword-search-results .resultName,  {
+  min-width:8em;
+}
+
+.keyword-search-results .resultSummary,  {
+  min-width:50%;
 }

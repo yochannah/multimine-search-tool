@@ -78,7 +78,7 @@ define(function (require, exports, module) {
         return fetchDisplayName(mine, scope.result.type);
       }
     });
-    
+
     scope.$watch(fieldNameWatcher, function () {
       if (!(scope.result && scope.result.mine)) return;
 
@@ -132,6 +132,27 @@ define(function (require, exports, module) {
     return typeNames[this.mine.root] && typeNames[this.mine.root][result.type];
   }
 
+  RowController.prototype.dontShowThingsTwice = function(result, summaryValue){
+    var type = this.getTypeName(result),
+    name = this.getObjectName(result),
+    summary = summaryValue.value;
+    return isDuplicate(type,summary) && isDuplicate(name,summary);
+  }
+
+  /*Helper function for dontshowthingstwice*/
+  function isDuplicate(term, summary){
+      if(summary && term && ('string' === typeof summary)) {
+        return term.toLowerCase() !== summary.toLowerCase();
+      } else {
+        return false;
+      }
+  }
+
+  RowController.prototype.getObjectName = function(obj){
+    obj = obj.fields;
+    return obj["organism.shortName"] || obj["organism.name"] || obj["protein.name"] || obj["name"];
+  }
+
   // Helper for making sure we don't make IO requests for data we already
   // have. This can be removed completely once all mines support the
   // correct cache headers on model requests (flymine already does, the
@@ -144,7 +165,7 @@ define(function (require, exports, module) {
       } catch (e) {
         console.error(e);
       }
-    } 
+    }
     return promises[key];
   }
 
