@@ -11,7 +11,7 @@
     "serve": "^1.4.0"
   },
   "scripts": {
-    "start": "serve",
+    "start": "serve -p 3456",
     "postinstall": "bower install --allow-root",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

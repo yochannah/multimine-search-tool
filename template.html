@@ -21,7 +21,7 @@
             </div>
           </td>
           <td colspan="4" ng-hide="complete || !step.data.searchTerm">
-            <div class="progress progress-striped">
+            <div class="active progress progress-striped">
               <div class="progress-bar progress-bar-success"
                    role="progressbar" aria-valuenow="{{percentDone}}" aria-valuemin="0" aria-valuemax="100" style="width: {{percentDone}}%">
                   <span class="sr-only">{{percentDone}}% Complete (success)</span>
@@ -30,6 +30,7 @@
           </td>
       </tr>
     </thead>
+    <tr ng-show="!state.results.length"><td colspan="4"><div class="loader"></div></td></tr>
     <tr ng-controller="RowController as row"
         ng-repeat="result in state.results | orderBy:'-relevance' | limitTo:25" ng-click="result.selected = !result.selected">
         <!-- TODO: separate selection and collapse -->
