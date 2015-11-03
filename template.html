@@ -1,8 +1,11 @@
-<table class="table keyword-search-results">
+<table class="table keyword-search-results table-hover">
     <thead>
       <tr>
-        <th>Result type
-          <div><small class="text-muted" alt="relevance">Relevance&nbsp;score</small></div>
+        <th>
+          <i class="fa"
+            ng-class="{'fa-check-square-o': allSelected, 'fa-square-o': !allSelected}"
+            ng-click="toggleSelectAll()"></i>
+          Result type
         </th>
         <th>Source</th>
         <th>Name</th>
@@ -35,9 +38,8 @@
         ng-repeat="result in state.results | orderBy:'-relevance' | limitTo:25" ng-click="result.selected = !result.selected">
         <!-- TODO: separate selection and collapse -->
         <td>
-            <i class="fa" ng-class="{'fa-bookmark': result.selected, 'fa-bookmark-o': !result.selected}"></i>
+            <i class="fa" ng-class="{'fa-check-square-o': result.selected, 'fa-square-o': !result.selected}"></i>
             <strong>{{ row.getTypeName(result) }}</strong>
-            <div><small class="text-muted" alt="relevance">{{ result.relevance }}</small></div>
         </td>
         <td class="mineName">
             {{result.mine.name}}
