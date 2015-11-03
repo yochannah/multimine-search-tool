@@ -9,18 +9,14 @@
         </th>
         <th>Source</th>
         <th>Name</th>
-        <th>Result summary</th>
+        <th>Result summary
+          <span class="pull-right loadingStatus label label-info" ng-show="showFailed && failed > 0">{{ numberOfSources - failed }} of {{numberOfSources}} sources loaded successfully.</span>
+        </th>
       </tr>
       <tr>
           <td colspan="4" ng-hide="state.results.length || !complete">
             <div class="alert alert-info">
               <strong>Sorry</strong> no results matched your search terms.
-            </div>
-          </td>
-          <td colspan="4" ng-show="showFailed && failed > 0">
-            <div class="alert alert-warning">
-              <span ng-click="showFailed = false" class="close">dismiss</span>
-              We did not receive a response from {{ failed }} sources.
             </div>
           </td>
           <td colspan="4" ng-hide="complete || !step.data.searchTerm">

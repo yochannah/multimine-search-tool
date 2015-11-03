@@ -95,6 +95,7 @@ define([
       $scope.failed = 0;
       $scope.allSelected=false;
       $scope.showFailed = true;
+      $scope.numberOfSources = 0;
       $scope.state = {
         // Facets come in sets, eg: {Category: [{name: x, count: y, selected: false}]}
         // they are aggregated from the facets returned from search results.
@@ -122,7 +123,7 @@ define([
       // any search fails, and we are ok if some of them do.
       searchingAll.then(function (promises) {
         // Supply progress notifications.
-        var n = promises.length;
+        var n = $scope.numberOfSources = promises.length;
         var whenned = promises.map($q.when);
         eachPromise(whenned, onProgress, _.compose(onProgress, onFailure));
         eachPromise(whenned, processResultSet);
