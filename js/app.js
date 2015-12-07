@@ -2,7 +2,7 @@
 define(['angular', 'underscore', 'pluralize', './controllers', './services'], function (angular, _, pluralize) {
 
 	'use strict';
-	
+
 	var App = angular.module('multimine-search-tool', [
     'multimine-search-tool.controllers',
     'multimine-search-tool.services'
@@ -35,5 +35,16 @@ define(['angular', 'underscore', 'pluralize', './controllers', './services'], fu
       }
     };
   });
+
+	App.directive('bindOnce', function() {
+    return {
+        scope: true,
+        link: function( $scope ) {
+            setTimeout(function() {
+                $scope.$destroy();
+            }, 0);
+        }
+    }
+});
 
 });
