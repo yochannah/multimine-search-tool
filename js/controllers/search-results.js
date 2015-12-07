@@ -4,8 +4,8 @@ define([
     './results-row'
     ], function (_, intermine, resultsrow) {
 
-	'use strict';	
-	
+	'use strict';
+
   var config = {
     timeout: 200,
     defaultCategory: {
@@ -21,7 +21,7 @@ define([
 
   // Return an angularjs controller.
 	return ['$scope', '$q', 'Mines', SearchResultsCtrl];
-	
+
   /**
    * @param {Scope} $scope An angularjs scope.
    * @param {Q} $q A Q-like interface.
@@ -68,6 +68,24 @@ define([
       });
     };
 
+    $scope.toggleSelectAll = function(){
+      $scope.allSelected ? deselectAll() : selectAll();
+    };
+
+    var selectAll = function () {
+      $scope.state.results.forEach(function (r) {
+        r.selected = true;
+      });
+      $scope.allSelected = true;
+    };
+
+     var deselectAll = function () {
+      $scope.state.results.forEach(function (r) {
+        r.selected = false;
+      });
+      $scope.allSelected = false;
+    };
+
     //--- Controller scoped functions.
 
     // (Re-)Initialise the state of the controller.
@@ -75,7 +93,9 @@ define([
       $scope.complete = false;
       $scope.percentDone = 0;
       $scope.failed = 0;
+      $scope.allSelected=false;
       $scope.showFailed = true;
+      $scope.numberOfSources = 0;
       $scope.state = {
         // Facets come in sets, eg: {Category: [{name: x, count: y, selected: false}]}
         // they are aggregated from the facets returned from search results.
@@ -103,7 +123,7 @@ define([
       // any search fails, and we are ok if some of them do.
       searchingAll.then(function (promises) {
         // Supply progress notifications.
-        var n = promises.length;
+        var n = $scope.numberOfSources = promises.length;
         var whenned = promises.map($q.when);
         eachPromise(whenned, onProgress, _.compose(onProgress, onFailure));
         eachPromise(whenned, processResultSet);
@@ -119,6 +139,7 @@ define([
         }
       });
 		}
+
 
 
     // Report the values found.
@@ -235,7 +256,7 @@ define([
     return x && x.selected;
   }
 
-	/** Returns Promise<String> 
+	/** Returns Promise<String>
 	 * eg fetchDisplayName(service, "Gene.symbol") => Promise["Gene > Symbol"]
 	**/
   var nameCache = {};

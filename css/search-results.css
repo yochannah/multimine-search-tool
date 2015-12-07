@@ -1,7 +1,3 @@
-.keyword-search-results .field-name {
-    width: 30%;
-}
-
 .summary-fields .summary-value {
     margin-right: 0.5em;
     margin-bottom: 0.1em;
@@ -21,6 +17,13 @@ content: "";
     background:rgba(66, 139, 202, 0.15);
 }
 
+.keyword-search-results {
+  min-height:400px;
+}
+
+.keyword-search-results .field-name {
+    width: 30%;
+}
 .keyword-search-results thead small { font-weight: normal}
 
 .keyword-search-results.table>thead>tr>th {vertical-align:top;}

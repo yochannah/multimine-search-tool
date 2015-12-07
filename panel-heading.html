@@ -1,7 +1,1 @@
-<button class="btn btn-xs btn-default pull-right"
-    blur-on-click
-    ng-click="heading.selectAll()">
-    select all
-</button>
-<strong>{{state.results.length}} results</strong> in {{state.categories.length}} categories.
-
+<strong>{{state.results.length || "Loading"}} results</strong>

@@ -54,6 +54,23 @@ tree-chart{
       /*border: 1px solid white;*/
 }
 
+.facets h4 {
+  margin-left:0.4em;
+}
+
+.panel-body {
+  padding-top:0;
+  padding-bottom:0;
+}
+
+.facets .list-group {
+  margin-bottom:0;
+}
+
+.facets .list-group-item:first-child {
+border:0;
+}
+
 .facets .facet.btn {
     border-bottom-width: 0;
 }

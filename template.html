@@ -1,12 +1,17 @@
-<table class="table keyword-search-results">
+<table class="table keyword-search-results table-hover">
     <thead>
       <tr>
-        <th>Result type
-          <div><small class="text-muted" alt="relevance">Relevance&nbsp;score</small></div>
+        <th>
+          <i class="fa"
+            ng-class="{'fa-check-square-o': allSelected, 'fa-square-o': !allSelected}"
+            ng-click="toggleSelectAll()"></i>
+          Result type
         </th>
         <th>Source</th>
         <th>Name</th>
-        <th>Result summary</th>
+        <th>Result summary
+          <span class="pull-right loadingStatus label label-info" ng-show="showFailed && failed > 0">{{ numberOfSources - failed }} of {{numberOfSources}} sources loaded successfully.</span>
+        </th>
       </tr>
       <tr>
           <td colspan="4" ng-hide="state.results.length || !complete">
@@ -14,14 +19,8 @@
               <strong>Sorry</strong> no results matched your search terms.
             </div>
           </td>
-          <td colspan="4" ng-show="showFailed && failed > 0">
-            <div class="alert alert-warning">
-              <span ng-click="showFailed = false" class="close">dismiss</span>
-              We did not receive a response from {{ failed }} sources.
-            </div>
-          </td>
           <td colspan="4" ng-hide="complete || !step.data.searchTerm">
-            <div class="progress progress-striped">
+            <div class="active progress progress-striped">
               <div class="progress-bar progress-bar-success"
                    role="progressbar" aria-valuenow="{{percentDone}}" aria-valuemin="0" aria-valuemax="100" style="width: {{percentDone}}%">
                   <span class="sr-only">{{percentDone}}% Complete (success)</span>
@@ -30,13 +29,13 @@
           </td>
       </tr>
     </thead>
+    <tr ng-show="!state.results.length"><td colspan="4"><div class="loader"></div></td></tr>
     <tr ng-controller="RowController as row"
         ng-repeat="result in state.results | orderBy:'-relevance' | limitTo:25" ng-click="result.selected = !result.selected">
         <!-- TODO: separate selection and collapse -->
         <td>
-            <i class="fa" ng-class="{'fa-bookmark': result.selected, 'fa-bookmark-o': !result.selected}"></i>
+            <i class="fa" ng-class="{'fa-check-square-o': result.selected, 'fa-square-o': !result.selected}"></i>
             <strong>{{ row.getTypeName(result) }}</strong>
-            <div><small class="text-muted" alt="relevance">{{ result.relevance }}</small></div>
         </td>
         <td class="mineName">
             {{result.mine.name}}

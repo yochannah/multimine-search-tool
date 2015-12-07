@@ -29,11 +29,6 @@ define(['angular', 'underscore', './controllers/search-results'], function (angu
       self.results = results;
     });
   }
-  HeadingCtrl.prototype.selectAll = function () {
-    this.results.forEach(function (r) {
-      r.selected = true;
-    });
-  };
   HeadingCtrl.$inject = ['$scope'];
 
   function FacetCtrl () {
@@ -55,7 +50,7 @@ define(['angular', 'underscore', './controllers/search-results'], function (angu
     scope.wantedMsgs = {ids: {}};
 
     scope.sumAvailable = scope.sumSelected = 0;
-    
+
     scope.$watch('messages', function () {
       var sum = 0;
       _.values(scope.messages.ids).forEach(function (data) {
@@ -76,7 +71,7 @@ define(['angular', 'underscore', './controllers/search-results'], function (angu
         delete scope.messages[message.what][message.key];
       }
       timeout(function () { // need a new reference to trigger update.
-        scope.messages = _.extend({}, scope.messages); 
+        scope.messages = _.extend({}, scope.messages);
       });
     });
 
