@@ -44,8 +44,7 @@ define(['angular', 'underscore', './controllers/search-results'], function (angu
   // The demo controller.
   function DemoCtrl (scope, timeout, location, queryParams) {
 
-    console.log(queryParams);
-    scope.step     = {data: {searchTerm: (queryParams.q || 'lola')}};
+    scope.step     = {data: {searchTerm: (queryParams.q || queryParams.stepsTerm || 'lola')}};
     scope.messages = {ids: {}};
     scope.wantedMsgs = {ids: {}};
 
@@ -60,7 +59,13 @@ define(['angular', 'underscore', './controllers/search-results'], function (angu
     });
 
     scope.$on('$locationChangeSuccess', function () {
-      scope.step.data.searchTerm = location.search()['q'];
+      var queryParamLocation = location.search().q;
+      //Reload after a search if this is the demo page.
+      //If it's embedded in steps we don't use /URL query param nav, and this
+      //would trigger a blank digest cycle if left outside a conditional, breaking the world.
+      if(queryParamLocation) {
+        scope.step.data.searchTerm = queryParamLocation;
+      }
     });
 
     scope.$on('has', function (event, message) {
