@@ -63,7 +63,7 @@ define(['angular', 'underscore', './controllers/search-results'], function (angu
       //Reload after a search if this is the demo page.
       //If it's embedded in steps we don't use /URL query param nav, and this
       //would trigger a blank digest cycle if left outside a conditional, breaking the world.
-      if(queryParamLocation) {
+      if(!window.searchTerm) {
         scope.step.data.searchTerm = queryParamLocation;
       }
     });
