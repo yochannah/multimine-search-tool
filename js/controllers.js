@@ -69,9 +69,10 @@ define(['angular', 'underscore', './controllers/search-results'], function (angu
     });
 
     scope.$on('has', function (event, message) {
-      // i++;
-      // console.log("%cmessage","color:lightseagreen;font-weight:bold;",message, i);
-      // console.log("%cevent","color:darkseagreen;font-weight:bold;",event, i);
+
+      i++;
+      console.log("%cmessage","color:lightseagreen;font-weight:bold;",message, i);
+      console.log("%cevent","color:darkseagreen;font-weight:bold;",event, i);
       // this horror is one of the best arguments for using react.
       if (message.data) {
         scope.messages[message.what][message.key] = message.data;

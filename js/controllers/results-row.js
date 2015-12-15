@@ -35,7 +35,7 @@ define(function (require, exports, module) {
       //trigger a 'has' event.
       var mine = scope.result.mine;
       var result = scope.result;
-
+      debugger;
       scope.$emit('has', {
         what: 'ids',
         key: mine.root + result.type,
