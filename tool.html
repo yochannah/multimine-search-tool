@@ -69,18 +69,6 @@
 
         <ng-include src="'facets.html'" ng-controller="FacetCtrl as facet"></ng-include>
 
-        <div class="panel panel-default messages" ng-controller="MessagesCtrl as msgCtrl">
-          <div class="panel-heading" ng-click="msgCtrl.collapsed = !msgCtrl.collapsed">
-            <i class="fa" ng-class="{'fa-caret-right': msgCtrl.collapsed, 'fa-caret-down': !msgCtrl.collapsed}"></i> {{sumAvailable}} Selected Items
-          </div>
-          <div class="panel-body">
-            <div class="list-group-item" ng-show="!msgCtrl.collapsed && data.request.ids.length" ng-repeat="(key, data) in messages.ids">
-              {{data.request.ids.length}} {{data.request.type}}s at
-              <code>{{data.service.name}}</code>
-            </div>
-          </div>
-        </div>
-
       </div>
 
       <div class="col-xs-9">
