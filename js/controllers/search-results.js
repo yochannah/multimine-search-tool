@@ -179,11 +179,11 @@ define([
           name: mine.name
         },
         ids: ids,
+        key: mine.root + type,
         type: type
       };
       $scope.$emit('has', {
         what: 'ids',
-        key: mine.root + type,
         data: data
       });
     }

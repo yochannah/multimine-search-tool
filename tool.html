@@ -19,6 +19,7 @@
       origin: "*",
       scope: "CurrentStep"
     });
+
     chan.bind('style', function(trans, params) {
 
       var head = document.getElementsByTagName("head")[0];
@@ -46,7 +47,30 @@
     });
 
 
+    function reportItems(data) {
+      try {
+        //debugger;
+        chan.call({
+          method: 'has',
+          params: {
+            what: 'ids',
+            data: data
+          },
+          success: function(b){console.log('message sent');},
+          error: function(b){console.error('error. error. does not compute.');}
+        });
+        // chan.notify({
+        //   method: 'has',
+        //   params: {
+        //     what: event.what,
+        //     data: message.data
+        //   }
+        // });
+      } catch (e) {
+        console.error(e);
+      }
 
+    }
 
   </script>
 
