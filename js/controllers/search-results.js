@@ -6,6 +6,8 @@ define([
 
 	'use strict';
 
+  var j = 0;
+
   var config = {
     timeout: 200,
     defaultCategory: {
@@ -50,7 +52,6 @@ define([
     // Trigger a search when we should.
 		$scope.$watch(searchWatch, search);
     $scope.$watch('state.results', reportResults);
-    $scope.$on('select.toggle.search-result', reportResults);
 
 		$scope.$watch('step.data.searchTerm', function (term) {
       $scope.termParts = term ? term.split(' ').map(normalise) : [];
@@ -111,7 +112,7 @@ define([
       console.log("searching for ", searchterm, facets);
       // empty string means "search for everything", but null
       // means not initialised yet.
-			if (searchterm == null) return;
+			if (searchterm === null) return;
 
       // Start the search.
       var searchingAll = allMines.then(searchFor(searchterm, facets));
@@ -139,8 +140,6 @@ define([
         }
       });
 		}
-
-
 
     // Report the values found.
     // emits a 'has' message for each set of items found at a mine.
@@ -185,7 +184,6 @@ define([
     }
 
     function processResultSet (resultSet) {
-      // console.log('RECEIVED', resultSet.mine.name, resultSet.results.length);
       var results = getResults(resultSet);
       var facets = getFacets(resultSet);
 
@@ -280,12 +278,12 @@ define([
       var size = 100;   // Return no more than 100 results.
       var key = service.root + "|" + needle + '|' + facetsToKey(facets);
       if (_searches[key]) {
-        return _searches[key]
+        return _searches[key];
       } else {
         var params = facetsToParams(facets);
         params.q = needle;
         params.size = size;
-        return _searches[key] = service.post(
+        return (_searches[key] = service.post(
           'search',
           params
         ).then(function(result) {
@@ -294,7 +292,7 @@ define([
 
           // Resolve our promise
           return result;
-        });
+        }));
 			}
     };
 
@@ -315,11 +313,11 @@ define([
   function searchFor(searchterm, facets) {
     return function (mines) {
       return mines.map(quicksearch(searchterm, facets));
-    }
-  };
+    };
+  }
 
   // Null safe application of Array.filter(f) to list
-  function filterList (list, f) { return list && list.filter(f); };
+  function filterList (list, f) { return list && list.filter(f); }
 
   // null safe mapping[key]++. Mutates mapping
   function increment (mapping, key) {

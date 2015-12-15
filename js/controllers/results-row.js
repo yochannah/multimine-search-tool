@@ -22,13 +22,36 @@ define(function (require, exports, module) {
     });
 
     // Fetch summary values when needed.
-    scope.$watch('result.selected', function (isSelected) {
-      scope.$emit('select.toggle.search-result', scope.result);
-      if (!scope.result || isSelected || scope.result.summaryValues) return;
+    scope.selectRow = function() {
+      //this does the checkbox and general stateful things
+      scope.result.selected = !scope.result.selected;
 
-      scope.result.summaryValues = []; // Prevent double fetch.
+      //I don't think anything here is listening for this any more. Maybe remove?
+      scope.$emit('select.toggle.search-result', scope.result);
+
+      //don't do anything if we're just deselecting a result.
+      if (!scope.result || !scope.result.selected || scope.result.summaryValues) return;
+
+      //trigger a 'has' event.
       var mine = scope.result.mine;
       var result = scope.result;
+
+      scope.$emit('has', {
+        what: 'ids',
+        key: mine.root + result.type,
+        data: {
+          service : {
+            root:mine.root,
+            name:mine.name
+          },
+          request : {
+            type : result.type,
+            ids : [result.id]
+          }
+        }
+      });
+
+      scope.result.summaryValues = []; // Prevent double fetch.
 
       mine.fetchSummaryFields().then(function (typeToFields) {
         var type = result.type;
@@ -63,7 +86,7 @@ define(function (require, exports, module) {
           });
         }
       });
-    });
+    };
 
     scope.$watch('scope.result.type', function () {
       if (!(scope.result && scope.result.mine)) return;
@@ -116,7 +139,7 @@ define(function (require, exports, module) {
     if (!fieldNames[this.mine.root]) {
       fieldNames[this.mine.root] = {};
     }
-    return fieldNames[this.mine.root][path] = name;
+    return (fieldNames[this.mine.root][path] = name);
   };
 
   RowController.prototype.setTypeName = function setTypeName (result, name) {
@@ -124,20 +147,20 @@ define(function (require, exports, module) {
     if (!typeNames[this.mine.root]) {
       typeNames[this.mine.root] = {};
     }
-    return typeNames[this.mine.root][result.type] = name;
-  }
+    return (typeNames[this.mine.root][result.type] = name);
+  };
 
   RowController.prototype.getTypeName = function getTypeName (result) {
     if (!this.mine || !result) return null;
     return typeNames[this.mine.root] && typeNames[this.mine.root][result.type];
-  }
+  };
 
   RowController.prototype.dontShowThingsTwice = function(result, summaryValue){
     var type = this.getTypeName(result),
     name = this.getObjectName(result),
     summary = summaryValue.value;
     return isDuplicate(type,summary) && isDuplicate(name,summary);
-  }
+  };
 
   /*Helper function for dontshowthingstwice*/
   function isDuplicate(term, summary){
@@ -150,8 +173,8 @@ define(function (require, exports, module) {
 
   RowController.prototype.getObjectName = function(obj){
     obj = obj.fields;
-    return obj["organism.shortName"] || obj["organism.name"] || obj["protein.name"] || obj["name"];
-  }
+    return (obj["organism.shortName"] || obj["organism.name"] || obj["protein.name"] || obj.name);
+  };
 
   // Helper for making sure we don't make IO requests for data we already
   // have. This can be removed completely once all mines support the

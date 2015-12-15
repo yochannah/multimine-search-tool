@@ -31,7 +31,7 @@
     </thead>
     <tr ng-show="!state.results.length"><td colspan="4"><div class="loader"></div></td></tr>
     <tr ng-controller="RowController as row"
-        ng-repeat="result in state.results | orderBy:'-relevance' | limitTo:25" ng-click="result.selected = !result.selected">
+        ng-repeat="result in state.results | orderBy:'-relevance' | limitTo:25" ng-click="selectRow(row)">
         <!-- TODO: separate selection and collapse -->
         <td>
             <i class="fa" ng-class="{'fa-check-square-o': result.selected, 'fa-square-o': !result.selected}"></i>

@@ -1,7 +1,7 @@
 define(['angular', 'underscore', './controllers/search-results'], function (angular, _, SearchResultsCtrl) {
 
   'use strict';
-
+  var i = 0;
 	var Controllers = angular.module('multimine-search-tool.controllers', [])
                            .controller('DemoCtrl',          DemoCtrl)
                            .controller('FacetCtrl',         FacetCtrl)
@@ -69,6 +69,9 @@ define(['angular', 'underscore', './controllers/search-results'], function (angu
     });
 
     scope.$on('has', function (event, message) {
+      // i++;
+      // console.log("%cmessage","color:lightseagreen;font-weight:bold;",message, i);
+      // console.log("%cevent","color:darkseagreen;font-weight:bold;",event, i);
       // this horror is one of the best arguments for using react.
       if (message.data) {
         scope.messages[message.what][message.key] = message.data;
@@ -84,3 +87,28 @@ define(['angular', 'underscore', './controllers/search-results'], function (angu
   DemoCtrl.$inject = ['$scope', '$timeout', '$location', 'queryParams'];
 
 });
+
+
+function reportItems(service, path, type, ids, categories, what) {
+  if (!categories) {
+    categories = ['selected'];
+  }
+  if (!what) {
+    what = 'ids';
+  }
+  chan.notify({
+    method: 'has',
+    params: {
+      what: what,
+      data: {
+        key: (categories.join(',') + '-' + path), // String - any identifier.
+        type: type, // String - eg: "Protein"
+        categories: categories, // Array[string] - eg: ['selected']
+        ids: ids, // Array[Int] - eg: [123, 456, 789]
+        service: {
+          root: service.root
+        }
+      }
+    }
+  });
+}
