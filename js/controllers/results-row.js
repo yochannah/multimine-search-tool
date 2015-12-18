@@ -96,16 +96,9 @@ define(function(require, exports, module) {
     });
 
     scope.isActiveType = function() {
-      var isActiveType = (scope.state.selectedType === null);
-      if (isActiveType) {
-        //if there's nothing selected, don't highlight everything,
-        return isActiveType;
-      } else {
         //if something is selected by the user, highlight cells which are the same
-        isActiveType = (scope.state.selectedType === scope.result.type);
-        console.log("%cisActiveType, scope.result.type, scopt.state.selectedType", "color:seagreen;font-weight:bold;", isActiveType, scope.result.type, scope.state.selectedType);
+        var isActiveType = (scope.state.selectedType === scope.result.type);
         return isActiveType;
-      }
     };
 
     /**
