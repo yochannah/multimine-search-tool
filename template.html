@@ -44,7 +44,7 @@
           {{row.getObjectName(result)}}
         </td>
         <td class="resultSummary">
-            <div class="summary-fields" ng-hide="result.selected">
+            <div class="summary-fields" ng-show="!result.selected">
                 <span bind-once class="summary-value"
                       ng-if="(summaryValue.value != null)"
                       ng-class="{matched: termMatched(summaryValue.value)}"

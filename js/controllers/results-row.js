@@ -21,6 +21,8 @@ define(function(require, exports, module) {
       self.type = type;
     });
 
+    prepSummaryFields(scope);
+
     // Fetch summary values when needed.
     scope.selectRow = function() {
       //this does the checkbox and general stateful things
@@ -49,8 +51,52 @@ define(function(require, exports, module) {
         }
       });
 
-      scope.result.summaryValues = []; // Prevent double fetch.
+    };
 
+    scope.$watch('scope.result.type', function() {
+      if (!(scope.result && scope.result.mine)) return;
+
+      var mine = scope.result.mine;
+      var key = "TN:" + mine.root + ":" + scope.result.type;
+      Q.when(promiseUniquely(key, fetchTypeName)).then(function(name) {
+        self.setTypeName(scope.result, name);
+      });
+
+      function fetchTypeName() {
+        return fetchDisplayName(mine, scope.result.type);
+      }
+    });
+
+    scope.$watch(fieldNameWatcher, function() {
+      if (!(scope.result && scope.result.mine)) return;
+
+      var mine = scope.result.mine;
+
+      Object.keys(scope.result.fields).forEach(function(field) {
+        var path = scope.result.type + '.' + field;
+        var key = 'FN:' + mine.root + ':' + path;
+        Q.when(promiseUniquely(key, fetchFieldName(path))).then(function(name) {
+          self.setFieldName(path, name);
+        }).catch(function(err) {
+          console.error(err);
+        });
+      });
+
+      function fetchFieldName(path) {
+        return function() {
+          return fetchDisplayName(mine, path).then(function(name) {
+            return name.replace(/^[^>]* >/, '');
+          });
+        };
+      }
+
+    });
+
+    function prepSummaryFields() {
+      var mine = scope.result.mine;
+      var result = scope.result;
+
+      scope.result.summaryValues = []; // Prevent double fetch.
       mine.fetchSummaryFields().then(function(typeToFields) {
         var type = result.type;
         var fields = typeToFields[type];
@@ -97,46 +143,10 @@ define(function(require, exports, module) {
           });
         }
       });
-    };
 
-    scope.$watch('scope.result.type', function() {
-      if (!(scope.result && scope.result.mine)) return;
+    }
 
-      var mine = scope.result.mine;
-      var key = "TN:" + mine.root + ":" + scope.result.type;
-      Q.when(promiseUniquely(key, fetchTypeName)).then(function(name) {
-        self.setTypeName(scope.result, name);
-      });
 
-      function fetchTypeName() {
-        return fetchDisplayName(mine, scope.result.type);
-      }
-    });
-
-    scope.$watch(fieldNameWatcher, function() {
-      if (!(scope.result && scope.result.mine)) return;
-
-      var mine = scope.result.mine;
-
-      Object.keys(scope.result.fields).forEach(function(field) {
-        var path = scope.result.type + '.' + field;
-        var key = 'FN:' + mine.root + ':' + path;
-        Q.when(promiseUniquely(key, fetchFieldName(path))).then(function(name) {
-          self.setFieldName(path, name);
-        }).catch(function(err) {
-          console.error(err);
-        });
-      });
-
-      function fetchFieldName(path) {
-        return function() {
-          return fetchDisplayName(mine, path).then(function(name) {
-            return name.replace(/^[^>]* >/, '');
-          });
-        };
-      }
-
-    });
   }
 
   RowController.prototype.getFieldName = function getFieldName(field) {
@@ -214,5 +224,6 @@ define(function(require, exports, module) {
     if (!scope.result && scope.result.fields) return null;
     return Object.keys(scope.result.fields).join(',');
   }
+
 
 });

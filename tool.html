@@ -39,6 +39,7 @@
     chan.bind('init', function(trans, params) {
       try {
         searchTerm = params.searchTerm;
+        stepsMines = params.mines;
         trans.complete('ok');
       } catch (e) {
         trans.error('InitialisationError', e);
@@ -49,7 +50,6 @@
 
     function reportItems(data) {
       try {
-        //debugger;
         chan.call({
           method: 'has',
           params: {

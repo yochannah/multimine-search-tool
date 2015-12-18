@@ -42,10 +42,12 @@ define(['angular', './mine-listing'], function (angular, mines) {
   // Service with same signature as the Mines service provided
   // by steps: {all: () -> Promise<Array<ServiceConfig>>}
   Services.factory('Mines', ['$q', function ($q) {
-
     return {all: all};
 
     function all () {
+      //if the mines are provided via a jschannel message, use these
+      if(stepsMines) {return $q.when(stepsMines);}
+      //else use defaults:
       return $q.when(mines);
     }
 
