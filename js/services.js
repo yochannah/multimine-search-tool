@@ -46,7 +46,8 @@ define(['angular', './mine-listing'], function (angular, mines) {
 
     function all () {
       //if the mines are provided via a jschannel message, use these
-      if(stepsMines) {return $q.when(stepsMines);}
+      if(typeof stepsMines !== "undefined") {
+        return $q.when(stepsMines);}
       //else use defaults:
       return $q.when(mines);
     }

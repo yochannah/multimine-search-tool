@@ -60,6 +60,11 @@ define([
       }
     });
 
+    $scope.$on('selectResultType', function(event, theResultType){
+      console.log('selectarooeny', theResultType);
+      $scope.state.selectedType = theResultType;
+    });
+
     // Used for highlighting matched terms.
     $scope.termMatched = function(term) {
       if (!term || !$scope.termParts) return false;
@@ -101,7 +106,8 @@ define([
         // they are aggregated from the facets returned from search results.
         facets: {},
         // the combined search results.
-        results: []
+        results: [],
+        selectedType : null
       };
     }
 

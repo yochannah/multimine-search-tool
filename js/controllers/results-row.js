@@ -13,6 +13,7 @@ define(function(require, exports, module) {
   function RowController(scope, Q) {
     var self = this;
 
+    scope.selectedResultType = null;
     // Make sure mine is available to self.
     scope.$watch('result.mine', function(mine) {
       self.mine = mine;
@@ -28,11 +29,13 @@ define(function(require, exports, module) {
       //this does the checkbox and general stateful things
       scope.result.selected = !scope.result.selected;
 
-      //I don't think anything here is listening for this any more. Maybe remove?
-      scope.$emit('select.toggle.search-result', scope.result);
-
-      //don't do anything if we're just deselecting a result.
-      if (!scope.result || !scope.result.selected || scope.result.summaryValues) return;
+      //Not much to do if we're if we're just deselecting a result.
+      if (!scope.result || !scope.result.selected) {
+        scope.$emit('selectResultType', null);
+        return;
+      }
+      //if we ARE selecting a result, proceed:
+      scope.$emit('selectResultType', scope.result.type);
 
       //trigger a 'has' event.
       var mine = scope.result.mine;
@@ -92,6 +95,22 @@ define(function(require, exports, module) {
 
     });
 
+    scope.isActiveType = function() {
+      var isActiveType = (scope.state.selectedType === null);
+      if (isActiveType) {
+        //if there's nothing selected, don't highlight everything,
+        return isActiveType;
+      } else {
+        //if something is selected by the user, highlight cells which are the same
+        isActiveType = (scope.state.selectedType === scope.result.type);
+        console.log("%cisActiveType, scope.result.type, scopt.state.selectedType", "color:seagreen;font-weight:bold;", isActiveType, scope.result.type, scope.state.selectedType);
+        return isActiveType;
+      }
+    };
+
+    /**
+     * This function loads the 'result summary' fields, ajaxily.
+     */
     function prepSummaryFields() {
       var mine = scope.result.mine;
       var result = scope.result;
@@ -143,10 +162,7 @@ define(function(require, exports, module) {
           });
         }
       });
-
     }
-
-
   }
 
   RowController.prototype.getFieldName = function getFieldName(field) {
