@@ -60,10 +60,37 @@ define([
       }
     });
 
-    $scope.$on('selectResultType', function(event, theResultType){
-      console.log('selectarooeny', theResultType);
-      $scope.state.selectedType = theResultType;
+    $scope.$on('selectResult', function(event, theResult){
+
+      //save for highlighting purposes
+      $scope.state.selectedType = theResult.type;
+
+      //save the actual record details
+      addToSelectedList(theResult);
     });
+
+    $scope.$on('deselectResult', function(event, theResult){
+
+      //dehighlight. Thsi might needto be more complex
+      $scope.state.selectedType = null;
+
+      //remove record details
+      var targetArray = $scope.state.selectedItems[theResult.type],
+      targetItem = targetArray.indexOf(theResult.id);
+      if(targetItem > -1) {
+        targetArray.splice(targetItem, 1);
+      } else {console.warn('tried to deselect item that was not in the list');}
+    });
+
+    function addToSelectedList(item) {
+      var items = $scope.state.selectedItems;
+      //create key if it doesn't exist
+      if(!items[item.type]){
+        items[item.type] = [];
+      }
+      items[item.type].push(item.id);
+    }
+
 
     // Used for highlighting matched terms.
     $scope.termMatched = function(term) {
@@ -107,7 +134,11 @@ define([
         facets: {},
         // the combined search results.
         results: [],
-        selectedType : null
+        //when a user has selected an item, its type shows here
+        selectedType : null,
+        //this contains arrays of selected item ids, sorted by type, e.g.
+        // selectedItems : {'Gene': [123545,132654], 'Protein' : [98424,75456,654654] }
+        selectedItems : {}
       };
     }
 

@@ -31,15 +31,18 @@ define(function(require, exports, module) {
 
       //Not much to do if we're if we're just deselecting a result.
       if (!scope.result || !scope.result.selected) {
-        scope.$emit('selectResultType', null);
+        scope.$emit('deselectResult', scope.result);
         return;
       }
       //if we ARE selecting a result, proceed:
-      scope.$emit('selectResultType', scope.result.type);
+      scope.$emit('selectResult', scope.result);
 
       //trigger a 'has' event.
       var mine = scope.result.mine;
       var result = scope.result;
+
+
+
       scope.$emit('has', {
         what: 'ids',
         data: {
@@ -50,7 +53,7 @@ define(function(require, exports, module) {
             name: mine.name
           },
           type: result.type,
-          ids: [result.id]
+          ids: scope.state.selectedItems[result.type]
         }
       });
 
