@@ -82,18 +82,11 @@ border:0;
 	background: white;
 	float: left;
 	margin: 5px;
-	border-radius: 5px;
 	border: 1px solid #aaaaaa;
 	font-size: 0.8em;
 }
 
 .resultitembanner {
-	-webkit-border-top-left-radius: 5px;
-	-webkit-border-top-right-radius: 5px;
-	-moz-border-radius-topleft: 5px;
-	-moz-border-radius-topright: 5px;
-	border-top-left-radius: 5px;
-	border-top-right-radius: 5px;
 	height: 30px;
 	background: #ffc785;
 	text-align: center;
@@ -184,11 +177,6 @@ table tr td {
 	margin: 4px;
 	border: 1px solid grey;
 	background: white;
-		-webkit-border-top-left-radius: 5px;
-	-webkit-border-top-right-radius: 5px;
-	-moz-border-radius-topleft: 5px;
-	-moz-border-radius-topright: 5px;
-
 }
 
 .resultscontainer {
@@ -213,4 +201,9 @@ snap-content {
 
 .mine-name {
   text-transform:capitalize
+}
+
+/* fixes inconsistent styling - stops doesn't really do round corners. */
+.panel, .panel-default .panel-heading,.panel-primary .panel-heading {
+  border-radius:0;
 }
