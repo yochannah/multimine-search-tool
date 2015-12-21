@@ -53,7 +53,7 @@ define(function(require, exports, module) {
             name: mine.name
           },
           type: result.type,
-          ids: scope.state.selectedItems[result.type]
+          ids: [scope.state.selectedItem]
         }
       });
 
