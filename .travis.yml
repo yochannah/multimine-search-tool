@@ -5,10 +5,6 @@ install:
   - npm install
   - bower install
 
-script:
-  - gulp    #build the app
-  - mocha   #test the app
-
 after_success:
   - test $TRAVIS_BRANCH == "master" && bash deploy.sh #Deploy to github gh-pages using the deploy.sh file
 
