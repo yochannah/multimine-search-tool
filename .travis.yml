@@ -5,6 +5,9 @@ install:
   - npm install
   - bower install
 
+script:
+  #placeholder to prevent travis running ant build?
+
 after_success:
   - test $TRAVIS_BRANCH == "master" && bash deploy.sh #Deploy to github gh-pages using the deploy.sh file
 
