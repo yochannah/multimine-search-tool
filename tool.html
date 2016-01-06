@@ -1,0 +1,110 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Multimine Search Version</title>
+  <link rel="stylesheet" href="css/loading.css">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/search-results.css">
+  <link rel="stylesheet" href="http://cdn.intermine.org/css/font-awesome/4.x/css/font-awesome.min.css">
+  <!-- Set up communication channels -->
+  <script src="js/jschannel.js" charset="utf-8"></script>
+  <script type="text/javascript">
+    searchTerm = '';
+    chan = Channel.build({
+      window: window.parent,
+      origin: "*",
+      scope: "CurrentStep"
+    });
+
+    chan.bind('style', function(trans, params) {
+
+      var head = document.getElementsByTagName("head")[0];
+      var link = document.createElement('link');
+
+      link.rel = "stylesheet";
+      link.href = params.stylesheet;
+
+      head.appendChild(link);
+      return 'ok';
+    });
+
+    chan.bind('configure', function(trans, params) {
+      return 'ok';
+    });
+
+    chan.bind('init', function(trans, params) {
+      try {
+        searchTerm = params.searchTerm;
+        stepsMines = params.mines;
+        trans.complete('ok');
+      } catch (e) {
+        trans.error('InitialisationError', e);
+      }
+      trans.delayReturn(true);
+    });
+
+
+    function reportItems(data) {
+      try {
+        chan.call({
+          method: 'has',
+          params: {
+            what: 'ids',
+            data: data
+          },
+          success: function(b){console.log('message sent');},
+          error: function(b){console.error('error. error. does not compute.');}
+        });
+
+      } catch (e) {
+        console.error(e);
+      }
+
+    }
+
+  </script>
+
+  <script charset="UTF-8" data-main="main" type="text/javascript" src="bower_components/requirejs/require.js">
+  </script>
+
+  <style>
+    [ng-cloak] {
+      display: none;
+    }
+  </style>
+</head>
+
+<body ng-cloak ng-controller="DemoCtrl">
+  <div class="container-fluid">
+
+    <div class="row" ng-controller="SearchResultsCtrl" ng-show="step.data.searchTerm">
+
+      <div class="col-xs-3">
+
+        <ng-include src="'facets.html'" ng-controller="FacetCtrl as facet"></ng-include>
+
+      </div>
+
+      <div class="col-xs-9">
+
+        <div class="panel panel-default">
+
+          <div class="panel-heading" ng-controller="HeadingCtrl as heading">
+            <ng-include src="'panel-heading.html'"></ng-include>
+          </div>
+
+          <ng-include src="'template.html'"></ng-include>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+
+</body>
+
+</html>

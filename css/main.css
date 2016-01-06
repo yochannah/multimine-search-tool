@@ -1,12 +1,10 @@
 @import url(http://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,100italic,100);
 
 body {
-    background: #333;
+    background: #fff;
     margin: 0;
     width: 100%;
     height: 100%;
-    background-image: url('../images/honey_im_subtle.png');
-    background-repeat: repeat;
     font-family: 'Roboto', sans-serif;
     font-weight: 300;
 }
@@ -84,18 +82,11 @@ border:0;
 	background: white;
 	float: left;
 	margin: 5px;
-	border-radius: 5px;
 	border: 1px solid #aaaaaa;
 	font-size: 0.8em;
 }
 
 .resultitembanner {
-	-webkit-border-top-left-radius: 5px;
-	-webkit-border-top-right-radius: 5px;
-	-moz-border-radius-topleft: 5px;
-	-moz-border-radius-topright: 5px;
-	border-top-left-radius: 5px;
-	border-top-right-radius: 5px;
 	height: 30px;
 	background: #ffc785;
 	text-align: center;
@@ -186,11 +177,6 @@ table tr td {
 	margin: 4px;
 	border: 1px solid grey;
 	background: white;
-		-webkit-border-top-left-radius: 5px;
-	-webkit-border-top-right-radius: 5px;
-	-moz-border-radius-topleft: 5px;
-	-moz-border-radius-topright: 5px;
-
 }
 
 .resultscontainer {
@@ -215,4 +201,9 @@ snap-content {
 
 .mine-name {
   text-transform:capitalize
+}
+
+/* fixes inconsistent styling - stops doesn't really do round corners. */
+.panel, .panel-default .panel-heading,.panel-primary .panel-heading {
+  border-radius:0;
 }

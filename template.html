@@ -2,9 +2,6 @@
     <thead>
       <tr>
         <th>
-          <i class="fa"
-            ng-class="{'fa-check-square-o': allSelected, 'fa-square-o': !allSelected}"
-            ng-click="toggleSelectAll()"></i>
           Result type
         </th>
         <th>Source</th>
@@ -31,10 +28,10 @@
     </thead>
     <tr ng-show="!state.results.length"><td colspan="4"><div class="loader"></div></td></tr>
     <tr ng-controller="RowController as row"
-        ng-repeat="result in state.results | orderBy:'-relevance' | limitTo:25" ng-click="result.selected = !result.selected">
+        ng-repeat="result in state.results | orderBy:'-relevance' | limitTo:25" ng-click="selectRow(row)" ng-class="{'success': isActiveType()}">
         <!-- TODO: separate selection and collapse -->
         <td>
-            <i class="fa" ng-class="{'fa-check-square-o': result.selected, 'fa-square-o': !result.selected}"></i>
+            <i class="fa" ng-class="{'fa-dot-circle-o': result.selected, 'fa-circle-o': !result.selected}"></i>
             <strong>{{ row.getTypeName(result) }}</strong>
         </td>
         <td class="mineName">
@@ -44,7 +41,7 @@
           {{row.getObjectName(result)}}
         </td>
         <td class="resultSummary">
-            <div class="summary-fields" ng-hide="result.selected">
+            <div class="summary-fields" ng-show="!result.selected">
                 <span bind-once class="summary-value"
                       ng-if="(summaryValue.value != null)"
                       ng-class="{matched: termMatched(summaryValue.value)}"
@@ -57,7 +54,7 @@
                     <td class="field-name">
                       <em>{{row.getFieldName(field)}}</em>
                     </td>
-                    <td ng-class="{active: termMatched(value)}">{{value}}</td>
+                    <td ng-class="{activeType: termMatched(value)}">{{value}}</td>
             </table>
         </td>
     </tr>

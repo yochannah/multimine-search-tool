@@ -15,7 +15,7 @@ define(['angular', './mine-listing'], function (angular, mines) {
         return [val];
       }
     };
-    // Parse the query string
+    // Parse the query string from the window URL bar (demo, non-steps)
     if (queryString = (window && window.location && window.location.search)) {
       queryString.slice(1).split('&').forEach(function (pair) {
         var parts = pair.split('=')
@@ -32,16 +32,23 @@ define(['angular', './mine-listing'], function (angular, mines) {
         }
       });
     }
+
+    //getting the search term from steps
+    if (window.searchTerm) {result.stepsTerm = searchTerm;}
+
     return result;
   }]);
 
   // Service with same signature as the Mines service provided
   // by steps: {all: () -> Promise<Array<ServiceConfig>>}
   Services.factory('Mines', ['$q', function ($q) {
-
     return {all: all};
 
     function all () {
+      //if the mines are provided via a jschannel message, use these
+      if(typeof stepsMines !== "undefined") {
+        return $q.when(stepsMines);}
+      //else use defaults:
       return $q.when(mines);
     }
 
